@@ -1,8 +1,11 @@
-import type { SvelteComponent } from 'svelte';
+import type {Component, SvelteComponent} from 'svelte';
+import type { IconComponentProps } from "phosphor-svelte";
+
+type ComponentType = typeof SvelteComponent | Component<IconComponentProps, {}, "">
 
 export interface AppManifest {
   id: string;
   name: string;
-  icon: typeof SvelteComponent;
-  component: typeof SvelteComponent;
+  icon: ComponentType;
+  component: typeof ComponentType;
 }

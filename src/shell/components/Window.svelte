@@ -206,7 +206,6 @@
   }
   .content {
     flex-grow: 1;
-    padding: 10px;
     background-color: #2d2e30;
   }
   .resizer {

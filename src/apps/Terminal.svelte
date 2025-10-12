@@ -7,74 +7,60 @@
     let inputValue = '';
     let inputEl: HTMLInputElement;
 
-    onMount(() => {
-        inputEl.focus();
+  onMount(() => {
+    inputEl.focus();
+  });
 
-        const initChannel = () => {
-            // @ts-ignore
-            if(window.qt && window.qt.webChannelTransport) {
-                // @ts-ignore
-                new QWebChannel(window.qt.webChannelTransport, (channel) => {
-                    // @ts-ignore
-                    window.backend = channel.objects.backend;
-                    console.log("Backend bridge initialized successfully.");
-                });
-            } else {
-                console.log("Backend bridge not available yet, retrying in 100ms...");
-                setTimeout(initChannel, 100);
-            }
-        };
+  function focusInput() {
+    inputEl.focus();
+  }
 
-        initChannel();
-    });
-
-    function focusInput() {
-        inputEl.focus();
+  async function handleCommand() {
+    const commandToExecute = inputValue.trim();
+    if (!commandToExecute) {
+      return;
     }
 
-    async function handleCommand() {
-        const commandToExecute = inputValue.trim();
-        if(!commandToExecute) {
-            return;
-        }
+    const fullCommand = `> ${commandToExecute}`;
+    let output = '';
 
-        const fullCommand = `> ${commandToExecute}`;
-        let output = '';
-
-        // @ts-ignore
-        if(window.backend && typeof window.backend.executeCommand === 'function') {
-            // @ts-ignore
-            output = await window.backend.executeCommand(commandToExecute);
-        } else {
-            const [command, ...args] = commandToExecute.split(' ');
-            switch(command.toLowerCase()) {
-                case 'help':
-                    output = 'Available commands: help, echo, clear, ls. (Running in standalone mode)';
-                    break;
-                case 'echo':
-                    output = args.join(' ');
-                    break;
-                case 'clear':
-                    history = [];
-                    inputValue = '';
-                    return;
-                case 'ls':
-                    try {
-                        const path = args[0] || '/';
-                        const files = kernel.vfs.ls(path);
-                        output = files.join('\n');
-                    } catch(e: any) {
-                        output = e.message;
-                    }
-                    break;
-                default:
-                    output = `Command not found: ${command}`;
-            }
-        }
-
-        history = [...history, fullCommand, output];
-        inputValue = '';
+    // Check if we are running inside the C++ webview host
+    // @ts-ignore
+    if (typeof window.executeCommand === 'function') {
+      // Call the C++-bound function and wait for the result.
+      // @ts-ignore
+      output = await window.executeCommand(commandToExecute);
+    } else {
+      // Fallback to original commands if not in the C++ host
+      const [command, ...args] = commandToExecute.split(' ');
+      switch (command.toLowerCase()) {
+        case 'help':
+          output = 'Available commands: help, echo, clear, ls. (Running in standalone mode)';
+          break;
+        case 'echo':
+          output = args.join(' ');
+          break;
+        case 'clear':
+          history = [fullCommand]; // Keep the clear command in history
+          inputValue = '';
+          return;
+        case 'ls':
+          try {
+            const path = args[0] || '/';
+            const files = kernel.vfs.ls(path);
+            output = files.join('\n');
+          } catch (e: any) {
+            output = e.message;
+          }
+          break;
+        default:
+          output = `Command not found: ${command}`;
+      }
     }
+
+    history = [...history, fullCommand, output];
+    inputValue = '';
+  }
 </script>
 
 <div class="terminal-container" on:click={focusInput}>
@@ -96,12 +82,12 @@
 
 <style>
     .terminal-container {
+        box-sizing: border-box;
         width: 100%;
         height: 100%;
         background-color: #1e1e1e;
         color: #d4d4d4;
         font-family: 'Courier New', Courier, monospace;
-        padding: 10px;
         overflow-y: auto;
         cursor: text;
     }

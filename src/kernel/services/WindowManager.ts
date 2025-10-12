@@ -31,7 +31,7 @@ export class WindowManager {
       appId: app.id,
       title: app.name,
       position: { x: 50 + this.windows.length * 20, y: 50 + this.windows.length * 20 },
-      size: { width: 500, height: 400 },
+      size: { width: 800, height: 600 },
       zIndex: this.nextZIndex++,
       isFocused: true,
       isMinimized: false,

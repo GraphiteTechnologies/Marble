@@ -3,14 +3,15 @@
 
     let iframeEl: HTMLIFrameElement;
     let iframeSrc = '';
-    let inputValue = 'https://www.wikipedia.org';
+    let inputValue = 'https://www.google.com';
 
-    function navigate() {
-        if(!inputValue.startsWith('http')) {
+    async function navigate() {
+        if (!inputValue.startsWith('http')) {
             inputValue = `https://${inputValue}`;
         }
 
-        iframeSrc = `http://localhost:3001/proxy?url=${encodeURIComponent(inputValue)}`;
+        // @ts-ignore
+        iframeSrc = await window.proxyRequest(inputValue);
     }
 
     function back() {
@@ -55,7 +56,7 @@
         <iframe
                 bind:this={iframeEl}
                 title="Browser Content"
-                src={iframeSrc}
+                srcdoc={iframeSrc}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"
         ></iframe>
     </div>
