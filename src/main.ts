@@ -23,7 +23,7 @@ splash.style.opacity = '0';
 
 setTimeout(() => {
     splash.parentNode!.removeChild(splash);
-}, 3000);
+}, 1000);
 
 appHost.classList.remove('hidden');
 

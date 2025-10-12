@@ -6,7 +6,7 @@
 </script>
 
 <div
-  class="context-menu"
+  class="context-menu select-none"
   style:top="{y}px"
   style:left="{x}px"
   in:fly={{ y: 10, duration: 100, opacity: 0 }}

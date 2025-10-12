@@ -5,20 +5,36 @@
   export let appRegistry: AppManifest[] = [];
   export let onOpenApp: (app: AppManifest) => void = () => {};
   export let onClose: () => void = () => {};
+
+  function handleScrimClick(e: MouseEvent) {
+    if (e.currentTarget === e.target) {
+      onClose();
+    }
+  }
 </script>
 
-<div class="scrim" on:click={onClose} transition:fade={{ duration: 150 }}>
+<div
+  role="button"
+  tabindex="0"
+  class="scrim"
+  on:click={handleScrimClick}
+  on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onClose()}
+  transition:fade={{ duration: 150 }}
+>
   <div
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
     class="launcher"
-    on:click|stopPropagation
+    on:keydown={(e) => e.key === 'Escape' && onClose()}
     transition:fly={{ duration: 250, x: -100, opacity: 0 }}
   >
     <div class="app-grid">
       {#each appRegistry as app (app.id)}
         <button class="app-tile" on:click={() => { onOpenApp(app); onClose(); }}>
-          <div class="icon-wrapper">
+          <span class="icon-wrapper">
             <svelte:component this={app.icon} size={28} />
-          </div>
+          </span>
           <span class="app-name">{app.name}</span>
         </button>
       {/each}

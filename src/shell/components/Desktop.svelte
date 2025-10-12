@@ -1,7 +1,7 @@
 <script lang="ts">
 </script>
 
-<main class="desktop">
+<main class="desktop select-none">
   <slot></slot>
 </main>
 

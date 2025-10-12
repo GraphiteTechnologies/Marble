@@ -1,115 +1,243 @@
-
 <script lang="ts">
-  import { BareMuxConnection } from '@mercuryworkshop/bare-mux';
-    import { onMount } from 'svelte';
+    import {BareMuxConnection} from '@mercuryworkshop/bare-mux';
+    import {onMount} from 'svelte';
+    import {ArrowCircleRight, ArrowLeft, ArrowRight} from 'phosphor-svelte';
 
     let iframe: HTMLIFrameElement;
-    let inputValue = 'https://www.google.com';
+    let inputValue = 'https://www.qwant.com';
     let loading = false;
     let connection;
+    let historyStack: string[] = [];
+    let currentIndex = -1;
 
-    onMount(async () => {
+    onMount(async() => {
         loading = true;
         try {
             await navigator.serviceWorker.register('/uv.sw.js');
-
             await navigator.serviceWorker.ready;
             console.log('Ultraviolet service worker is active.');
-            
             await navigate();
-
-        } catch (error) {
+        } catch(error) {
             console.error('Ultraviolet initialization failed:', error);
         } finally {
             loading = false;
         }
     });
 
-    async function navigate() {
-        loading = true;        
-        let url = inputValue.trim();
-        if (!url) {
+    async function navigate(urlOverride?: string) {
+        loading = true;
+        let url = (urlOverride || inputValue).trim();
+        if(!url) {
             loading = false;
             return;
-        };
+        }
 
-        if (!/^(https?:\/\/)/.test(url)) {
+        if(!/^(https?:\/\/)/.test(url)) {
             url = 'https://' + url;
         }
-        try {            
+
+        try {
             connection = new BareMuxConnection("/baremux/worker.js");
             const wispUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
 
-            if(await connection.getTransport() !== "/epoxy/index.mjs") {
-                await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+            if(await connection.getTransport() !== "/epoxy/index.mjs")
+                await connection.setTransport("/epoxy/index.mjs", [{wisp: wispUrl}]);
+
+            if(iframe) {
+                // @ts-ignore
+                iframe.src = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
             }
 
-        if (iframe) {
-            // @ts-ignore
-            iframe.src = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
-        }
+            // update history
+            if(currentIndex === -1 || historyStack[currentIndex] !== url) {
+                historyStack = historyStack.slice(0, currentIndex + 1);
+                historyStack.push(url);
+                currentIndex = historyStack.length - 1;
+            }
+
+            inputValue = url;
         } catch(err) {
             console.log(err);
         }
-        
     }
 
     function onIframeLoad() {
         loading = false;
     }
+
+    function goBack() {
+        if(currentIndex > 0) {
+            currentIndex--;
+            navigate(historyStack[currentIndex]);
+        }
+    }
+
+    function goForward() {
+        if(currentIndex < historyStack.length - 1) {
+            currentIndex++;
+            navigate(historyStack[currentIndex]);
+        }
+    }
 </script>
 
 <div class="browser-app">
     <div class="toolbar">
-        <input type="text" bind:value={inputValue} on:keydown={(e) => e.key === 'Enter' && navigate()} placeholder="Enter URL"/>
-        <button on:click={navigate} disabled={loading}>
+        <div class="nav-buttons">
+            <button on:click={goBack} disabled={currentIndex <= 0} title="Back">
+                <ArrowLeft size={22} weight="bold"/>
+            </button>
+            <button on:click={goForward} disabled={currentIndex >= historyStack.length - 1} title="Forward">
+                <ArrowRight size={22} weight="bold"/>
+            </button>
+        </div>
+
+        <input
+                type="text"
+                bind:value={inputValue}
+                on:keydown={(e) => e.key === 'Enter' && navigate()}
+                placeholder="Search or enter address"
+        />
+
+        <button class="go" on:click={navigate} disabled={loading}>
             {#if loading}
-                <span>Loading...</span>
+                <span class="loader"></span>
             {:else}
-                <span>Go</span>
+                <ArrowCircleRight size={22} weight="fill"/>
             {/if}
         </button>
     </div>
+
     <div class="content">
-        <iframe src="about:blank" bind:this={iframe} title="Browser" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts" on:load={onIframeLoad}></iframe>
+        <iframe
+                src="about:blank"
+                bind:this={iframe}
+                title="Browser"
+                sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"
+                on:load={onIframeLoad}
+        ></iframe>
     </div>
 </div>
 
 <style>
+    :global(body) {
+        margin: 0;
+        font-family: 'Inter', 'Roboto', sans-serif;
+        background: #121212;
+        color: #e8eaed;
+    }
+
     .browser-app {
         display: flex;
         flex-direction: column;
-        height: 100%;
-        background-color: #f0f0f0;
+        height: 100vh;
+        background: #121212;
     }
+
     .toolbar {
         display: flex;
-        padding: 8px;
-        background-color: #fff;
-        border-bottom: 1px solid #ccc;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: #1f1f1f;
+        border-bottom: 1px solid #2a2a2a;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
+
+    .nav-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .nav-buttons button {
+        background: transparent;
+        border: none;
+        color: #b0b0b0;
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        transition: background 0.2s, color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-buttons button:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+    }
+
+    .nav-buttons button:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
     .toolbar input {
         flex: 1;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        height: 36px;
+        padding: 0 12px;
+        font-size: 14px;
+        border: 1px solid #2a2a2a;
+        border-radius: 20px;
+        background: #2a2a2a;
+        color: #e8eaed;
+        transition: border 0.2s, box-shadow 0.2s;
     }
-    .toolbar button {
-        margin-left: 8px;
-        padding: 8px 12px;
+
+    .toolbar input::placeholder {
+        color: #9aa0a6;
+    }
+
+    .toolbar input:focus {
+        outline: none;
+        border-color: #373737;
+    }
+
+    .go {
+        height: 36px;
+        width: 40px;
         border: none;
-        background-color: #007bff;
+        background: #2b2b2b;
         color: white;
-        border-radius: 4px;
+        border-radius: 50%;
+        font-weight: 500;
         cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
     }
-    .toolbar button:disabled {
-        background-color: #ccc;
+
+    .go:hover:not(:disabled) {
+        background: #5e5e5e;
     }
+
+    .go:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .loader {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid white;
+        border-top: 2px solid transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
     .content {
         flex: 1;
         position: relative;
+        background: #121212;
     }
+
     .content iframe {
         position: absolute;
         top: 0;
@@ -117,5 +245,6 @@
         width: 100%;
         height: 100%;
         border: none;
+        background: #121212;
     }
 </style>

@@ -91,8 +91,9 @@
   }
 </script>
 
-{#if !window.isMinimized}
 <div
+  role="dialog"
+  tabindex="-1"
   class="window"
   class:maximized="{window.isMaximized}"
   style:top="{window.position.y}px"
@@ -105,7 +106,7 @@
   on:mousedown={onFocus}
   in:fly={{ y: 10, duration: 150, opacity: 0 }}
 >
-  <div class="title-bar" on:mousedown={onDragStart} on:dblclick={onToggleMaximize}>
+  <div role="button" tabindex="0" class="title-bar" on:mousedown={onDragStart} on:dblclick={onToggleMaximize}>
     <div class="title-info">
       {#if app}
         <div class="app-icon">
@@ -131,9 +132,8 @@
       <svelte:component this={app.component} />
     {/if}
   </div>
-  <div class="resizer" on:mousedown={onResizeStart}></div>
+  <div role="button" aria-label="Resize window" tabindex="0" class="resizer" on:mousedown={onResizeStart}></div>
 </div>
-{/if}
 
 <style>
   .window {

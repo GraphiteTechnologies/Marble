@@ -22,3 +22,14 @@ body {
   height: 100vh;
   width: 100vw;
 }
+
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+.select-allow {
+  user-select: all !important;
+  -webkit-user-select: all !important;
+}

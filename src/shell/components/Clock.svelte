@@ -14,7 +14,7 @@
   $: formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 </script>
 
-<div class="time-pill">
+<div class="time-pill select-none">
   {formattedTime}
 </div>
 

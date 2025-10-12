@@ -63,7 +63,14 @@
   }
 </script>
 
-<div class="terminal-container" on:click={focusInput}>
+<div
+  role="textbox"
+  aria-multiline="true"
+  tabindex="0"
+  class="terminal-container select-allow"
+  on:click={focusInput}
+  on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && focusInput()}
+>
     <div class="history">
         {#each history as line}
             <pre>{line}</pre>
