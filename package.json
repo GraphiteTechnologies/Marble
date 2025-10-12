@@ -20,7 +20,7 @@
     "start:proxy": "node proxy/server.js",
     "start:ui": "npm run preview --port 5173",
     "start": "concurrently \"npm run start:ui\" \"npm run start:host\" \"npm run start:proxy\"",
-    "ez-boot": "npm run build && npm run start"
+    "ez-boot": "npm i && npm run build && npm run start"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",
