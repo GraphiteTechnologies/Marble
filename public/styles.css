@@ -1,0 +1,22 @@
+#splash img {
+    max-width: 50%;
+    max-height: 50%;
+}
+
+#splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 1s ease-in-out;
+}
+
+.hidden {
+    display: none;
+}
+

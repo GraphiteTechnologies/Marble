@@ -11,12 +11,14 @@ use tao::{
     event_loop::{ControlFlow, EventLoop},
     window::WindowBuilder,
 };
+use tao::window::Fullscreen;
 use wry::{webview::WebViewBuilder};
 
 fn main() -> Result<()> {
     let event_loop: EventLoop<UserEvent> = EventLoop::with_user_event();
     let window = WindowBuilder::new()
         .with_title("Graphite Rust Host")
+        .with_fullscreen(Some(Fullscreen::Borderless(None)))
         .build(&event_loop)?;
 
     let proxy = event_loop.create_proxy();
