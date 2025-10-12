@@ -1,17 +1,17 @@
 
 <script lang="ts">
+  import { BareMuxConnection } from '@mercuryworkshop/bare-mux';
     import { onMount } from 'svelte';
 
     let iframe: HTMLIFrameElement;
     let inputValue = 'https://www.google.com';
     let loading = false;
+    let connection;
 
     onMount(async () => {
         loading = true;
         try {
-            await navigator.serviceWorker.register('/uv.sw.js', {
-                scope: '/uv/service/',
-            });
+            await navigator.serviceWorker.register('/uv.sw.js');
 
             await navigator.serviceWorker.ready;
             console.log('Ultraviolet service worker is active.');
@@ -25,9 +25,8 @@
         }
     });
 
-    function navigate() {
-        loading = true;
-        
+    async function navigate() {
+        loading = true;        
         let url = inputValue.trim();
         if (!url) {
             loading = false;
@@ -37,16 +36,22 @@
         if (!/^(https?:\/\/)/.test(url)) {
             url = 'https://' + url;
         }
-        
-        // @ts-ignore
-        const proxiedUrl = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
-        
-        console.log('Original URL:', url);
-        console.log('Proxied URL:', proxiedUrl);
+        try {            
+            connection = new BareMuxConnection("/baremux/worker.js");
+            const wispUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
+
+            if(await connection.getTransport() !== "/epoxy/index.mjs") {
+                await connection.setTransport("/epoxy/index.mjs", [{ wisp: wispUrl }]);
+            }
 
         if (iframe) {
-            iframe.src = proxiedUrl;
+            // @ts-ignore
+            iframe.src = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
         }
+        } catch(err) {
+            console.log(err);
+        }
+        
     }
 
     function onIframeLoad() {

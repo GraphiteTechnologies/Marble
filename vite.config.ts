@@ -7,8 +7,16 @@ export default defineConfig({
   plugins: [svelte()],
   server: {
     proxy: {
-      '/bare/': {
+      '/baremux/': {
         target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/epoxy/': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+      '/wisp/': {
+        target: 'ws://localhost:4000',
         changeOrigin: true,
         ws: true,
       },
