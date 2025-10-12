@@ -7,20 +7,31 @@ export class VFS {
     private root: Directory | null = null;
 
     constructor() {
-        this.mount();
+        this.root = null;
+    }
+
+    public async init(): Promise<void> {
+        await this.mount();
         console.log("Virtual File System Initialized");
     }
 
-    private mount(): void {
+    private async mount(): Promise<void> {
         const storedFs = localStorage.getItem(FS_STORAGE_KEY);
         if(storedFs) {
             this.root = JSON.parse(storedFs);
         } else {
-            this.initializeDefaultFs();
+            await this.initializeDefaultFs();
         }
+
+        const wallpapers = await this.fetchWallpapers();
+        wallpapers.forEach(wallpaper => {
+            this.writeFile(`/usr/share/wallpapers/${wallpaper.name}`, wallpaper.content);
+        });
+
+        this.sync();
     }
 
-    private initializeDefaultFs(): void {
+    private async initializeDefaultFs(): Promise<void> {
         console.log("No filesystem found. Initializing default FS.");
         this.root = {
             id: 'root',
@@ -31,11 +42,24 @@ export class VFS {
         };
 
         this.mkdir('/home');
+        this.mkdir('/usr/share/wallpapers');
         this.mkdir('/system');
         this.mkdir('/apps');
 
         this.sync();
     }
+
+    private async fetchWallpapers(): Promise<{ name: string, content: string }[]> {
+        try {
+            const response = await fetch('/api/wallpapers');
+            const wallpaperFiles = await response.json();
+            return wallpaperFiles.map((name: string) => ({name, content: ''}));
+        } catch(error) {
+            console.error('Failed to fetch wallpapers:', error);
+            return [];
+        }
+    }
+
 
     private sync(): void {
         if(this.root) {
@@ -137,5 +161,14 @@ export class VFS {
         }
         return Object.keys((node as Directory).children);
     }
+
+    public readDir(path: string): VFSFile[] {
+        const {node} = this._resolvePath(path);
+        if(!node || node.type !== InodeType.Directory) {
+            throw new Error(`Directory not found or not a directory: ${path}`);
+        }
+        return Object.values((node as Directory).children).filter(child => child.type === InodeType.File) as VFSFile[];
+    }
+
 
 }

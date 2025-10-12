@@ -1,21 +1,20 @@
 mod constants;
 mod ipc;
 
-use crate::constants::{INIT_JS};
+use crate::constants::INIT_JS;
 use crate::ipc::ipc_message::IpcMessage;
 use crate::ipc::user_event::UserEvent;
 use anyhow::Result;
 use std::process::Command;
 use tao::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    window::WindowBuilder,
+    event_loop::{ControlFlow, EventLoop, EventLoopBuilder},
+    window::{Fullscreen, WindowBuilder},
 };
-use tao::window::Fullscreen;
-use wry::{webview::WebViewBuilder};
+use wry::WebViewBuilder;
 
 fn main() -> Result<()> {
-    let event_loop: EventLoop<UserEvent> = EventLoop::with_user_event();
+    let event_loop: EventLoop<UserEvent> = EventLoopBuilder::<UserEvent>::with_user_event().build();
     let window = WindowBuilder::new()
         .with_title("Graphite Rust Host")
         .with_fullscreen(Some(Fullscreen::Borderless(None)))
@@ -23,14 +22,13 @@ fn main() -> Result<()> {
 
     let proxy = event_loop.create_proxy();
 
-    let webview_builder = WebViewBuilder::new(window)?
-        .with_url("http://localhost:5173")?
+    let webview = WebViewBuilder::new()
+        .with_url("http://localhost:5173")
         .with_initialization_script(INIT_JS)
-        .with_accept_first_mouse(true);
-
-    let webview = webview_builder
-        .with_ipc_handler(move |_, message: String| {
-            match serde_json::from_str::<IpcMessage>(&message) {
+        .with_accept_first_mouse(true)
+        .with_ipc_handler(move |request: wry::http::Request<String>| {
+            let message = request.body();
+            match serde_json::from_str::<IpcMessage>(message) {
                 Ok(IpcMessage::Command(msg)) => {
                     let proxy_clone = proxy.clone();
                     std::thread::spawn(move || {
@@ -45,13 +43,11 @@ fn main() -> Result<()> {
                             }
                             Err(e) => (false, e.to_string()),
                         };
-                        proxy_clone
-                            .send_event(UserEvent::CommandResult {
-                                callback_id: msg.callback_id,
-                                success,
-                                result,
-                            })
-                            .expect("Failed to send event");
+                        let _ = proxy_clone.send_event(UserEvent::CommandResult {
+                            callback_id: msg.callback_id,
+                            success,
+                            result,
+                        });
                     });
                 }
                 Err(error) => {
@@ -59,7 +55,7 @@ fn main() -> Result<()> {
                 }
             }
         })
-        .build()?;
+        .build(&window)?;
 
     event_loop.run(move |event, _, control_flow| {
         *control_flow = ControlFlow::Wait;
@@ -80,9 +76,7 @@ fn main() -> Result<()> {
                     success,
                     serde_json::to_string(&result).unwrap()
                 );
-                webview
-                    .evaluate_script(&script)
-                    .expect("Failed to evaluate script");
+                let _ = webview.evaluate_script(&script);
             }
             _ => (),
         }

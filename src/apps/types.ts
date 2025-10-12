@@ -1,8 +1,17 @@
 import type { Component } from 'svelte';
 
-export interface AppManifest {
-  id: string;
+export enum AppType {
+  APPLICATION = 'APPLICATION',
+  SYSTEM = 'SYSTEM',
+}
+
+export interface AppMetadata {
   name: string;
-  icon: Component;
+  type: AppType;
   component: Component;
+  icon: Component;
+  metadata?: {
+    width?: number;
+    height?: number;
+  };
 }

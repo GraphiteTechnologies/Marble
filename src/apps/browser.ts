@@ -1,10 +1,11 @@
-import type { AppManifest } from './types';
+import type { AppMetadata } from './types';
 import BrowserComponent from './Browser.svelte';
 import { Globe } from 'phosphor-svelte';
+import { AppType } from './types';
 
-export const BrowserApp: AppManifest = {
-  id: 'browser',
+export const browser: AppMetadata = {
   name: 'Browser',
-  icon: Globe,
+  type: AppType.APPLICATION,
   component: BrowserComponent,
+  icon: Globe,
 };

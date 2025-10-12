@@ -15,7 +15,12 @@
     "preview": "vite preview",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
     "check:rust": "cd host ; cargo check",
-    "check": "npm run check:rust && npm run check:svelte"
+    "check": "npm run check:rust && npm run check:svelte",
+    "start:host": "cd host && ./target/release/graphite-host",
+    "start:proxy": "node proxy/server.js",
+    "start:ui": "npm run preview --port 5173",
+    "start": "concurrently \"npm run start:ui\" \"npm run start:host\" \"npm run start:proxy\"",
+    "ez-boot": "npm run build && npm run start"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.2.1",

@@ -7,69 +7,66 @@
     let inputValue = '';
     let inputEl: HTMLInputElement;
 
-  onMount(() => {
-    inputEl.focus();
-  });
+    onMount(() => {
+        inputEl.focus();
+    });
 
-  function focusInput() {
-    inputEl.focus();
-  }
-
-  async function handleCommand() {
-    const commandToExecute = inputValue.trim();
-    if (!commandToExecute) {
-      return;
+    function focusInput() {
+        inputEl.focus();
     }
 
-    const fullCommand = `> ${commandToExecute}`;
-    let output = '';
+    async function handleCommand() {
+        const commandToExecute = inputValue.trim();
+        if(!commandToExecute) {
+            return;
+        }
 
-    // Check if we are running inside the C++ webview host
-    // @ts-ignore
-    if (typeof window.executeCommand === 'function') {
-      // Call the C++-bound function and wait for the result.
-      // @ts-ignore
-      output = await window.executeCommand(commandToExecute);
-    } else {
-      // Fallback to original commands if not in the C++ host
-      const [command, ...args] = commandToExecute.split(' ');
-      switch (command.toLowerCase()) {
-        case 'help':
-          output = 'Available commands: help, echo, clear, ls. (Running in standalone mode)';
-          break;
-        case 'echo':
-          output = args.join(' ');
-          break;
-        case 'clear':
-          history = [fullCommand]; // Keep the clear command in history
-          inputValue = '';
-          return;
-        case 'ls':
-          try {
-            const path = args[0] || '/';
-            const files = kernel.vfs.ls(path);
-            output = files.join('\n');
-          } catch (e: any) {
-            output = e.message;
-          }
-          break;
-        default:
-          output = `Command not found: ${command}`;
-      }
+        const fullCommand = `> ${commandToExecute}`;
+        let output = '';
+
+        // @ts-ignore
+        if(typeof window.executeCommand === 'function') {
+            // @ts-ignore
+            output = await window.executeCommand(commandToExecute);
+        } else {
+            const [command, ...args] = commandToExecute.split(' ');
+            switch(command.toLowerCase()) {
+                case 'help':
+                    output = 'Available commands: help, echo, clear, ls. (Running in standalone mode)';
+                    break;
+                case 'echo':
+                    output = args.join(' ');
+                    break;
+                case 'clear':
+                    history = [fullCommand];
+                    inputValue = '';
+                    return;
+                case 'ls':
+                    try {
+                        const path = args[0] || '/';
+                        const files = kernel.vfs.ls(path);
+                        output = files.join('\n');
+                    } catch(e: any) {
+                        output = e.message;
+                    }
+                    break;
+                default:
+                    output = `Command not found: ${command}`;
+            }
+        }
+
+        history = [...history, fullCommand, output];
+        inputValue = '';
     }
-
-    history = [...history, fullCommand, output];
-    inputValue = '';
-  }
 </script>
 
 <div
-  role="textbox"
-  aria-multiline="true"
-  tabindex="0"
-  class="terminal-container select-allow"
-  on:click={focusInput}
-  on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && focusInput()}
+        role="textbox"
+        aria-multiline="true"
+        tabindex="0"
+        class="app-container terminal-container select-allow"
+        on:click={focusInput}
+        on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && focusInput()}
 >
     <div class="history">
         {#each history as line}
@@ -88,12 +85,11 @@
 </div>
 
 <style>
+    @import '../shell/AppKit.css';
+
     .terminal-container {
-        box-sizing: border-box;
-        width: 100%;
-        height: 100%;
-        background-color: #1e1e1e;
-        color: #d4d4d4;
+        background-color: var(--primary-background);
+        color: var(--primary-text);
         font-family: 'Courier New', Courier, monospace;
         overflow-y: auto;
         cursor: text;
@@ -122,7 +118,7 @@
         background: none;
         border: none;
         outline: none;
-        color: #d4d4d4;
+        color: var(--primary-text);
         font-family: inherit;
         font-size: inherit;
     }

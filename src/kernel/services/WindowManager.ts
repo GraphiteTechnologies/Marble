@@ -1,5 +1,5 @@
 import type {WindowState} from './windowManager.types';
-import type {AppManifest} from '../../apps/types';
+import type {AppMetadata} from '../../apps/types';
 
 type Subscription = (windows: WindowState[]) => void;
 
@@ -26,11 +26,13 @@ export class WindowManager {
         this.subscriptions.forEach(callback => callback(this.windows));
     }
 
-    public open(app: AppManifest): void {
+    public open(app: AppMetadata): void {
         const newWindow: WindowState = {
             id: `win-${this.nextWindowId++}`,
-            appId: app.id,
+            appId: app.name,
             title: app.name,
+            component: app.component,
+            icon: app.icon,
             position: {x: 50 + this.windows.length * 20, y: 50 + this.windows.length * 20},
             size: {width: 800, height: 600},
             zIndex: this.nextZIndex++,

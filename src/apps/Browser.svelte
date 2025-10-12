@@ -80,7 +80,7 @@
     }
 </script>
 
-<div class="browser-app">
+<div class="app-container browser-app">
     <div class="toolbar">
         <div class="nav-buttons">
             <button on:click={goBack} disabled={currentIndex <= 0} title="Back">
@@ -119,18 +119,13 @@
 </div>
 
 <style>
-    :global(body) {
-        margin: 0;
-        font-family: 'Inter', 'Roboto', sans-serif;
-        background: #121212;
-        color: #e8eaed;
-    }
+    @import '../shell/AppKit.css';
 
     .browser-app {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-        background: #121212;
+        height: 100%;
+        padding: 0;
     }
 
     .toolbar {
@@ -138,9 +133,8 @@
         align-items: center;
         gap: 8px;
         padding: 8px 12px;
-        background: #1f1f1f;
-        border-bottom: 1px solid #2a2a2a;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        background: var(--secondary-background);
+        border-bottom: 1px solid var(--border-color);
     }
 
     .nav-buttons {
@@ -151,10 +145,10 @@
     .nav-buttons button {
         background: transparent;
         border: none;
-        color: #b0b0b0;
+        color: var(--secondary-text);
         cursor: pointer;
         padding: 6px;
-        border-radius: 6px;
+        border-radius: var(--border-radius);
         transition: background 0.2s, color 0.2s;
         display: flex;
         align-items: center;
@@ -163,7 +157,7 @@
 
     .nav-buttons button:hover:not(:disabled) {
         background: rgba(255, 255, 255, 0.08);
-        color: #ffffff;
+        color: var(--primary-text);
     }
 
     .nav-buttons button:disabled {
@@ -175,28 +169,28 @@
         flex: 1;
         height: 36px;
         padding: 0 12px;
-        font-size: 14px;
-        border: 1px solid #2a2a2a;
+        font-size: var(--font-size-base);
+        border: 1px solid var(--border-color);
         border-radius: 20px;
-        background: #2a2a2a;
-        color: #e8eaed;
+        background: var(--primary-background);
+        color: var(--primary-text);
         transition: border 0.2s, box-shadow 0.2s;
     }
 
     .toolbar input::placeholder {
-        color: #9aa0a6;
+        color: var(--secondary-text);
     }
 
     .toolbar input:focus {
         outline: none;
-        border-color: #373737;
+        border-color: var(--accent-color);
     }
 
     .go {
         height: 36px;
         width: 40px;
         border: none;
-        background: #2b2b2b;
+        background: var(--secondary-background);
         color: white;
         border-radius: 50%;
         font-weight: 500;
@@ -208,7 +202,7 @@
     }
 
     .go:hover:not(:disabled) {
-        background: #5e5e5e;
+        background: var(--accent-color);
     }
 
     .go:disabled {
@@ -235,7 +229,6 @@
     .content {
         flex: 1;
         position: relative;
-        background: #121212;
     }
 
     .content iframe {
@@ -245,6 +238,5 @@
         width: 100%;
         height: 100%;
         border: none;
-        background: #121212;
     }
 </style>

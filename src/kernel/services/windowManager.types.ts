@@ -1,7 +1,11 @@
+import type { Component } from 'svelte';
+
 export interface WindowState {
   id: string;
   appId: string;
   title: string;
+  component: Component;
+  icon: Component;
   position: { x: number; y: number };
   size: { width: number; height: number };
   zIndex: number;

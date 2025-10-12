@@ -1,10 +1,11 @@
-import type { AppManifest } from './types';
+import type { AppMetadata } from './types';
 import WelcomeComponent from './Welcome.svelte';
 import { HandWaving } from 'phosphor-svelte';
+import { AppType } from './types';
 
-export const WelcomeApp: AppManifest = {
-  id: 'welcome',
+export const welcome: AppMetadata = {
   name: 'Welcome',
-  icon: HandWaving,
+  type: AppType.APPLICATION,
   component: WelcomeComponent,
+  icon: HandWaving,
 };

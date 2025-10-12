@@ -73,7 +73,6 @@
         {/if}
 
         <Dock
-                {appRegistry}
                 {windows}
                 visible={dockVisible}
                 onOpenApp={(app) => kernel.windowManager.open(app)}

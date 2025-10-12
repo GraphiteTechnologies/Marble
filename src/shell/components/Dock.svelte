@@ -1,24 +1,31 @@
 <script lang="ts">
-    import type {AppManifest} from '../../apps/types';
+    import type {AppMetadata} from '../../apps/types';
     import type {Writable} from 'svelte/store';
     import type {WindowState} from '../../kernel/services/windowManager.types';
     import Clock from './Clock.svelte';
     import {getContext} from 'svelte';
     import type {Kernel} from '../../kernel/Kernel';
     import {fly} from 'svelte/transition';
+    import {pinnedApps} from '../store/pinnedAppsStore';
+    import {appRegistry} from '../../apps/registry';
 
-    export let appRegistry: AppManifest[] = [];
     export let windows: Writable<WindowState[]>;
-    export let onOpenApp: (app: AppManifest) => void = () => {
+    export let onOpenApp: (app: AppMetadata) => void = () => {
     };
     export let onToggleLauncher: () => void = () => {
     };
     export let visible = false;
 
     const kernel = getContext<Kernel>('kernel');
+    let draggedApp: AppMetadata | null = null;
+    let dropIndex: number | null = null;
 
-    function onAppClick(app: AppManifest) {
-        const window = $windows.find(win => win.appId === app.id);
+    $: pinnedAppMetadata = $pinnedApps
+        .map(name => appRegistry.find(app => app.name === name))
+        .filter((app): app is AppMetadata => !!app);
+
+    function onAppClick(app: AppMetadata) {
+        const window = $windows.find(win => win.appId === app.name);
         if(window) {
             if(window.isMinimized) {
                 kernel.windowManager.restore(window.id);
@@ -29,6 +36,30 @@
             onOpenApp(app);
         }
     }
+
+    function handleDragStart(app: AppMetadata) {
+        draggedApp = app;
+    }
+
+    function handleDragOver(event: DragEvent, index: number) {
+        event.preventDefault();
+        dropIndex = index;
+    }
+
+    function handleDrop() {
+        if(draggedApp && dropIndex !== null) {
+            const currentApps = $pinnedApps;
+            const draggedIndex = currentApps.indexOf(draggedApp.name);
+
+            const newPinnedApps = [...currentApps];
+            newPinnedApps.splice(draggedIndex, 1);
+            newPinnedApps.splice(dropIndex, 0, draggedApp.name);
+
+            pinnedApps.set(newPinnedApps);
+        }
+        draggedApp = null;
+        dropIndex = null;
+    }
 </script>
 
 {#if visible}
@@ -37,16 +68,27 @@
             <button class="launcher-button" on:click={onToggleLauncher} aria-label="Open launcher"></button>
         </div>
 
-        <div class="app-icons-container">
-            {#each appRegistry as app (app.id)}
-                <button class="app-button" on:click={() => onAppClick(app)}>
-                    <span class="icon-wrapper">
-                        <svelte:component this={app.icon} size={24}/>
-                    </span>
-                    {#if $windows.some(win => win.appId === app.id)}
-                        <span class="running-indicator"></span>
-                    {/if}
-                </button>
+                <div class="app-icons-container" role="list" on:dragover={(e) => e.preventDefault()} on:drop={handleDrop}>
+                    {#each pinnedAppMetadata as app, i (app.name)}
+                        <div
+                            role="listitem"
+                            class="app-button-wrapper"
+                            class:drag-over={i === dropIndex}
+                            on:dragover={(e) => handleDragOver(e, i)}
+                        >                    <button
+                            class="app-button"
+                            draggable="true"
+                            on:dragstart={() => handleDragStart(app)}
+                            on:click={() => onAppClick(app)}
+                    >
+                        <span class="icon-wrapper">
+                            <svelte:component this={app.icon} size={24}/>
+                        </span>
+                        {#if $windows.some(win => win.appId === app.name)}
+                            <span class="running-indicator"></span>
+                        {/if}
+                    </button>
+                </div>
             {/each}
         </div>
 
@@ -146,5 +188,22 @@
         height: 4px;
         background-color: #8ab4f8;
         border-radius: 50%;
+    }
+
+    .app-button-wrapper {
+        position: relative;
+        transition: transform 0.2s;
+    }
+
+    .app-button-wrapper.drag-over::before {
+        content: '';
+        position: absolute;
+        left: -4px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 2px;
+        height: 24px;
+        background-color: var(--accent-color);
+        border-radius: 1px;
     }
 </style>

@@ -3,28 +3,32 @@ import { Kernel } from './kernel/Kernel'
 import { mount } from 'svelte'
 import App from './shell/App.svelte'
 
-const kernel = new Kernel();
+async function main() {
+  const kernel = new Kernel();
+  await kernel.init();
 
-function createApp() {
-  return mount(App, {
-    target: document.getElementById('app')!,
-    props: {
-      kernel: kernel
-    }
-  })
+  function createApp() {
+    return mount(App, {
+      target: document.getElementById('app')!,
+      props: {
+        kernel: kernel
+      }
+    })
+  }
+
+  const app = createApp();
+  const splash = document.getElementById('splash')!;
+  const appHost = document.getElementById('app')!;
+
+  splash.style.opacity = '0';
+
+  setTimeout(() => {
+      splash.parentNode!.removeChild(splash);
+  }, 1000);
+
+  appHost.classList.remove('hidden');
+
+  return app;
 }
 
-const app = createApp();
-
-const splash = document.getElementById('splash')!;
-const appHost = document.getElementById('app')!;
-
-splash.style.opacity = '0';
-
-setTimeout(() => {
-    splash.parentNode!.removeChild(splash);
-}, 1000);
-
-appHost.classList.remove('hidden');
-
-export default app
+export default main();

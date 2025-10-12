@@ -11,6 +11,10 @@ export class Kernel {
     this.vfs = new VFS();
     this.processManager = new ProcessManager();
     this.windowManager = new WindowManager();
+  }
+
+  public async init(): Promise<void> {
+    await this.vfs.init();
     console.log("Kernel Initialized");
   }
 }
