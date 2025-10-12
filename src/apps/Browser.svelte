@@ -1,164 +1,116 @@
+
 <script lang="ts">
-    import {ArrowClockwise, ArrowLeft, ArrowRight, Lock} from 'phosphor-svelte';
+    import { onMount } from 'svelte';
 
-    let iframeEl: HTMLIFrameElement;
-    let iframeSrc = '';
+    let iframe: HTMLIFrameElement;
     let inputValue = 'https://www.google.com';
+    let loading = false;
 
-    async function navigate() {
-        if (!inputValue.startsWith('http')) {
-            inputValue = `https://${inputValue}`;
+    onMount(async () => {
+        loading = true;
+        try {
+            await navigator.serviceWorker.register('/uv.sw.js', {
+                scope: '/uv/service/',
+            });
+
+            await navigator.serviceWorker.ready;
+            console.log('Ultraviolet service worker is active.');
+            
+            await navigate();
+
+        } catch (error) {
+            console.error('Ultraviolet initialization failed:', error);
+        } finally {
+            loading = false;
         }
+    });
 
+    function navigate() {
+        loading = true;
+        
+        let url = inputValue.trim();
+        if (!url) {
+            loading = false;
+            return;
+        };
+
+        if (!/^(https?:\/\/)/.test(url)) {
+            url = 'https://' + url;
+        }
+        
         // @ts-ignore
-        iframeSrc = await window.proxyRequest(inputValue);
+        const proxiedUrl = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
+        
+        console.log('Original URL:', url);
+        console.log('Proxied URL:', proxiedUrl);
+
+        if (iframe) {
+            iframe.src = proxiedUrl;
+        }
     }
 
-    function back() {
-        iframeEl?.contentWindow?.history.back();
+    function onIframeLoad() {
+        loading = false;
     }
-
-    function forward() {
-        iframeEl?.contentWindow?.history.forward();
-    }
-
-    function refresh() {
-        iframeEl?.contentWindow?.location.reload();
-    }
-
-    navigate();
 </script>
 
-<div class="browser-container dark">
-    <div class="header">
-        <div class="nav-controls">
-            <button on:click={back}>
-                <ArrowLeft size={20}/>
-            </button>
-            <button on:click={forward}>
-                <ArrowRight size={20}/>
-            </button>
-            <button on:click={refresh}>
-                <ArrowClockwise size={20}/>
-            </button>
-        </div>
-        <div class="address-bar">
-            <Lock size={16}/>
-            <input
-                    type="text"
-                    bind:value={inputValue}
-                    on:keydown={(e) => e.key === 'Enter' && navigate()}
-                    placeholder="Search Google or type a URL"
-            />
-        </div>
+<div class="browser-app">
+    <div class="toolbar">
+        <input type="text" bind:value={inputValue} on:keydown={(e) => e.key === 'Enter' && navigate()} placeholder="Enter URL"/>
+        <button on:click={navigate} disabled={loading}>
+            {#if loading}
+                <span>Loading...</span>
+            {:else}
+                <span>Go</span>
+            {/if}
+        </button>
     </div>
-    <div class="content-area">
-        <iframe
-                bind:this={iframeEl}
-                title="Browser Content"
-                srcdoc={iframeSrc}
-                sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-presentation"
-        ></iframe>
+    <div class="content">
+        <iframe src="about:blank" bind:this={iframe} title="Browser" sandbox="allow-forms allow-modals allow-pointer-lock allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts" on:load={onIframeLoad}></iframe>
     </div>
 </div>
 
 <style>
-    .browser-container {
+    .browser-app {
         display: flex;
         flex-direction: column;
         height: 100%;
-        background-color: #fff;
-        color: #202124;
+        background-color: #f0f0f0;
     }
-
-    .header {
+    .toolbar {
         display: flex;
-        align-items: center;
         padding: 8px;
-        background-color: #f1f3f4;
-        border-bottom: 1px solid #d1d1d1;
-    }
-
-    .nav-controls {
-        display: flex;
-        gap: 4px;
-    }
-
-    .nav-controls button {
-        background: none;
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        color: #5f6368;
-        transition: background-color 0.2s;
-    }
-
-    .nav-controls button:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-    }
-
-    .address-bar {
-        flex-grow: 1;
-        display: flex;
-        align-items: center;
-        background-color: #e8eaed;
-        border-radius: 24px;
-        padding: 0 16px;
-        margin-left: 12px;
-        height: 36px;
-        color: #5f6368;
-    }
-
-    .address-bar input {
-        flex-grow: 1;
-        border: none;
-        background: none;
-        outline: none;
-        margin-left: 8px;
-        font-size: 14px;
-        color: #202124;
-    }
-
-    .content-area {
-        flex-grow: 1;
         background-color: #fff;
+        border-bottom: 1px solid #ccc;
     }
-
-    iframe {
+    .toolbar input {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    .toolbar button {
+        margin-left: 8px;
+        padding: 8px 12px;
+        border: none;
+        background-color: #007bff;
+        color: white;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    .toolbar button:disabled {
+        background-color: #ccc;
+    }
+    .content {
+        flex: 1;
+        position: relative;
+    }
+    .content iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         border: none;
-    }
-
-    .dark {
-        background-color: #2d2e30;
-        color: #e8eaed;
-    }
-
-    .dark .header {
-        background-color: #202124;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .dark .nav-controls button {
-        color: #9aa0a6;
-    }
-
-    .dark .nav-controls button:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-
-    .dark .address-bar {
-        background-color: #3c4043;
-        color: #9aa0a6;
-    }
-
-    .dark .address-bar input {
-        color: #e8eaed;
     }
 </style>

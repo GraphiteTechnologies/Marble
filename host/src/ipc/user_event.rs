@@ -5,9 +5,4 @@ pub enum UserEvent {
         success: bool,
         result: String,
     },
-    ProxyResult {
-        callback_id: String,
-        success: bool,
-        result: String,
-    },
 }

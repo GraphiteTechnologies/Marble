@@ -4,9 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:ui\" \"npm run dev:host\"",
+    "dev": "concurrently \"npm run dev:ui\" \"npm run dev:host\" \"npm run dev:proxy\"",
     "dev:ui": "vite",
     "dev:host": "cd host ; cargo run",
+    "dev:proxy": "node proxy/server.js",
     "build:host": "cd host ; cargo build --release",
     "build:vite": "vite build",
     "build": "npm run build:vite && npm run build:host",
@@ -25,7 +26,24 @@
     "vite": "^7.1.7"
   },
   "dependencies": {
+    "@titaniumnetwork-dev/ultraviolet": "^3.2.10",
+    "@tomphttp/bare-server-node": "^2.0.6",
+    "axios": "^1.12.2",
+    "cheerio": "^1.1.2",
     "concurrently": "^9.2.1",
+    "express": "^5.1.0",
     "phosphor-svelte": "^3.0.1"
-  }
+  },
+  "main": "svelte.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GraphiteTechnologies/Marble.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GraphiteTechnologies/Marble/issues"
+  },
+  "homepage": "https://github.com/GraphiteTechnologies/Marble#readme"
 }
