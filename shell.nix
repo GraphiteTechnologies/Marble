@@ -28,12 +28,6 @@ nixpkgs.mkShell {
     gobject-introspection
   ]
 
-  ++ (with nixpkgs; [
-    libdrm
-    libxkbcommon
-    wayland
-  ]);
-
   nativeBuildInputs = with nixpkgs; [ pkg-config ];
 
   LD_LIBRARY_PATH = nixpkgs.lib.makeLibraryPath [
