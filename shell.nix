@@ -64,4 +64,3 @@ nixpkgs.mkShell {
     export LD_LIBRARY_PATH=${nixpkgs.libsoup_3}/lib:${nixpkgs.webkitgtk_4_1}/lib:$LD_LIBRARY_PATH
   '';
 }
-
