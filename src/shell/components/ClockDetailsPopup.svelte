@@ -1,13 +1,18 @@
 <script lang="ts">
-    import { fly } from 'svelte/transition';
-    import { dateTimeStore } from '../store/dateTimeStore';
+    import {fly} from 'svelte/transition';
+    import {dateTimeStore} from '../store/dateTimeStore';
 
     let time: Date;
     dateTimeStore.subscribe(store => {
         time = store.time;
     });
 
-    $: formattedTimeWithSeconds = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true });
+    $: formattedTimeWithSeconds = time.toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
 </script>
 
 <div class="details-popup-scrim" on:click={() => dateTimeStore.update(s => ({...s, clockDetailsVisible: false}))}>
@@ -25,11 +30,12 @@
         height: 100%;
         z-index: 11999;
     }
+
     .clock-details-popup {
         position: absolute;
         bottom: 56px;
         right: 16px;
-        background-color: rgba(45, 46, 48, 0.8);
+        background-color: var(--ui-transparent-background);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -39,6 +45,7 @@
         color: var(--primary-text);
         font-family: var(--font-family);
     }
+
     .time-display {
         font-size: var(--font-size-large);
         font-weight: 500;

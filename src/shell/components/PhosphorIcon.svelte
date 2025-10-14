@@ -9,6 +9,7 @@
 
   onMount(async () => {
     try {
+      /* @vite-ignore */
       const iconModule = await import(`phosphor-svelte/lib/${name}.svelte`);
       iconComponent = iconModule.default;
     } catch (e) {

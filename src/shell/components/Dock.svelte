@@ -109,7 +109,7 @@
         left: 0;
         width: 100%;
         height: 48px;
-        background-color: rgba(32, 33, 36, 0.85);
+        background-color: var(--ui-transparent-background);
         backdrop-filter: blur(10px);
         display: flex;
         justify-content: space-between;

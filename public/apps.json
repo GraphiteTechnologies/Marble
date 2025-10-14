@@ -28,5 +28,20 @@
     "name": "GitHub",
     "author": "Microsoft",
     "url": "https://github.com"
+  },
+  {
+    "name": "Poki",
+    "author": "Poki",
+    "url": "https://poki.com"
+  },
+  {
+    "name": "Discord",
+    "author": "Discord",
+    "url": "https://discord.com"
+  },
+  {
+    "name": "Geforce Now",
+    "author": "nVidia",
+    "url": "https://play.geforcenow.com/"
   }
 ]

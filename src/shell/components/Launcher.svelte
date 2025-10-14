@@ -166,7 +166,7 @@
         max-width: 500px;
         height: auto;
         max-height: 70vh;
-        background-color: rgba(32, 33, 36, 0.85);
+        background-color: var(--ui-transparent-background);
         backdrop-filter: blur(10px);
         border-radius: 24px;
         padding: 20px;
@@ -183,7 +183,7 @@
     .search-input {
         width: 93%;
         padding: 12px 16px;
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--ui-transparent-background);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
         color: var(--primary-text);

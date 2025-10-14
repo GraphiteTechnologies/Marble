@@ -6,7 +6,7 @@ export enum AppType {
 }
 
 export interface AppMetadata {
-  id?: string;
+  id: string;
   name: string;
   type: AppType;
   component: Component;

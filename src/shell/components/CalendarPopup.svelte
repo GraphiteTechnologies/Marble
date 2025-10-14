@@ -120,7 +120,7 @@
         bottom: 56px;
         right: 16px;
         width: 320px;
-        background-color: rgba(45, 46, 48, 0.8);
+        background-color: var(--ui-transparent-background);
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.1);

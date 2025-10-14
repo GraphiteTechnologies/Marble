@@ -29,7 +29,7 @@ function createWebAppsStore() {
 
   subscribe(updatedApps => {
     const serializableApps = updatedApps
-      .filter(app => app.url) // Ensure it's a web app
+      .filter(app => app.url)
       .map(({ id, name, icon, url }) => ({ id, name, icon, url }));
     localStorage.setItem(WEB_APPS_STORAGE_KEY, JSON.stringify(serializableApps));
   });

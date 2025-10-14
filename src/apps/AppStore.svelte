@@ -4,6 +4,7 @@
   import { sendToast } from '../shell/store/toasterStore';
   import type { AppMetadata } from './types';
   import PhosphorIcon from '../shell/components/PhosphorIcon.svelte';
+  import '../shell/AppKit.css';
 
   interface AppStoreApp {
     name: string;
@@ -34,7 +35,7 @@
   }
 </script>
 
-<div class="app-store">
+<div class="app-container app-store">
   <h1>App Store</h1>
   <div class="app-grid">
     {#each apps as app}
@@ -50,7 +51,7 @@
           <h2>{app.name}</h2>
           <p>{app.author}</p>
         </div>
-        <button on:click={() => install(app)} disabled={isInstalled(app)}>
+        <button class="btn" on:click={() => install(app)} disabled={isInstalled(app)}>
           {isInstalled(app) ? 'Installed' : 'Install'}
         </button>
       </div>
@@ -60,21 +61,19 @@
 
 <style>
   .app-store {
-    padding: 20px;
-    height: 100%;
-    overflow-y: auto;
+    overflow: auto;
   }
 
   .app-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
+    gap: var(--spacing-large);
   }
 
   .app-card {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
-    padding: 16px;
+    background-color: var(--secondary-background);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-medium);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -84,7 +83,7 @@
   .app-icon {
     width: 64px;
     height: 64px;
-    margin-bottom: 12px;
+    margin-bottom: var(--spacing-medium);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -103,25 +102,11 @@
 
   .app-info p {
     margin: 4px 0 12px;
-    font-size: 14px;
-    color: #aaa;
+    font-size: var(--font-size-base);
+    color: var(--secondary-text);
   }
 
-  button {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  button:hover {
-    background-color: var(--accent-color-hover);
-  }
-
-  button:disabled {
+  .btn:disabled {
     background-color: #555;
     cursor: not-allowed;
   }

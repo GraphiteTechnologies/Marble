@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { getContext, onMount } from 'svelte';
-    import type { Kernel } from '../kernel/Kernel';
+    import {getContext, onMount} from 'svelte';
+    import type {Kernel} from '../kernel/Kernel';
 
     export let section: string | null = null;
 
@@ -8,15 +8,15 @@
     let selectedWallpaper: string = '';
     let activeSection = section || 'appearance';
 
-    onMount(async () => {
+    onMount(async() => {
         const kernel = getContext<Kernel>('kernel');
         const vfs = kernel.vfs;
         const wallpaperFiles = vfs.readDir('/usr/share/wallpapers');
         wallpapers = wallpaperFiles.map(file => file.name);
 
         const savedWallpaper = localStorage.getItem('wallpaper');
-        if (savedWallpaper) {
-            if (savedWallpaper.startsWith('data:')) {
+        if(savedWallpaper) {
+            if(savedWallpaper.startsWith('data:')) {
                 selectedWallpaper = 'custom';
             } else {
                 selectedWallpaper = savedWallpaper;
@@ -27,31 +27,33 @@
     });
 
     function changeWallpaper() {
-        if (selectedWallpaper !== 'custom') {
+        if(selectedWallpaper !== 'custom') {
             localStorage.setItem('wallpaper', selectedWallpaper);
             const desktop = document.querySelector('.desktop') as HTMLElement;
-            if (desktop) {
+
+            if(desktop)
                 desktop.style.backgroundImage = `url(/wallpapers/${selectedWallpaper})`;
-            }
         }
     }
 
     function handleWallpaperUpload(event: Event) {
         const target = event.target as HTMLInputElement;
         const file = target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                const dataUrl = reader.result as string;
-                localStorage.setItem('wallpaper', dataUrl);
-                const desktop = document.querySelector('.desktop') as HTMLElement;
-                if (desktop) {
-                    desktop.style.backgroundImage = `url(${dataUrl})`;
-                }
-                selectedWallpaper = 'custom';
-            };
-            reader.readAsDataURL(file);
-        }
+
+        if(!file)
+            return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const dataUrl = reader.result as string;
+            localStorage.setItem('wallpaper', dataUrl);
+            const desktop = document.querySelector('.desktop') as HTMLElement;
+            if(desktop) {
+                desktop.style.backgroundImage = `url(${dataUrl})`;
+            }
+            selectedWallpaper = 'custom';
+        };
+        reader.readAsDataURL(file);
     }
 </script>
 
@@ -77,7 +79,9 @@
                         {#each wallpapers as wallpaper}
                             <option value={wallpaper}>{wallpaper}</option>
                         {/each}
-                        <option value="custom" disabled={!localStorage.getItem('wallpaper')?.startsWith('data:')}>Custom</option>
+                        <option value="custom" disabled={!localStorage.getItem('wallpaper')?.startsWith('data:')}>
+                            Custom
+                        </option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -107,7 +111,7 @@
 
     .sidebar {
         width: 200px;
-        background: var(--secondary-background);
+        background: transparent;
         padding: 20px;
         border-right: 1px solid var(--border-color);
     }
