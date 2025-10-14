@@ -4,6 +4,7 @@ import { AppType } from './types';
 import SettingsIcon from './SettingsIcon.svelte';
 
 export const settings: AppMetadata = {
+  id: 'settings',
   name: 'Settings',
   type: AppType.APPLICATION,
   component: Settings,

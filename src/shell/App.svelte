@@ -3,13 +3,17 @@
     import {writable} from 'svelte/store';
     import type {Kernel} from '../kernel/Kernel';
     import type {WindowState} from '../kernel/services/windowManager.types';
-    import {appRegistry} from '../apps/registry';
+    import {appRegistry as staticAppRegistry} from '../apps/registry';
+    import {webApps} from './store/webAppsStore';
+    import {dateTimeStore} from './store/dateTimeStore';
 
     import Desktop from './components/Desktop.svelte';
     import Dock from './components/Dock.svelte';
     import Window from './components/Window.svelte';
     import Launcher from './components/Launcher.svelte';
     import ContextMenu from './components/ContextMenu.svelte';
+    import CalendarPopup from './components/CalendarPopup.svelte';
+    import ClockDetailsPopup from './components/ClockDetailsPopup.svelte';
 
     export let kernel: Kernel;
 
@@ -19,6 +23,8 @@
     let launcherOpen = false;
     let contextMenu = {visible: false, x: 0, y: 0};
     let dockVisible = false;
+
+    $: combinedAppRegistry = [...staticAppRegistry, ...$webApps];
 
     function handleContextMenu(event: MouseEvent) {
         event.preventDefault();
@@ -62,7 +68,7 @@
 
         {#if launcherOpen}
             <Launcher
-                    {appRegistry}
+                    appRegistry={combinedAppRegistry}
                     onOpenApp={(app) => kernel.windowManager.open(app)}
                     onClose={() => launcherOpen = false}
             />
@@ -72,7 +78,16 @@
             <ContextMenu x={contextMenu.x} y={contextMenu.y}/>
         {/if}
 
+        {#if $dateTimeStore.calendarVisible}
+            <CalendarPopup />
+        {/if}
+
+        {#if $dateTimeStore.clockDetailsVisible}
+            <ClockDetailsPopup />
+        {/if}
+
         <Dock
+                appRegistry={combinedAppRegistry}
                 {windows}
                 visible={dockVisible}
                 onOpenApp={(app) => kernel.windowManager.open(app)}

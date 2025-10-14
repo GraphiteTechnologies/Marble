@@ -2,14 +2,14 @@
     import type {AppMetadata} from '../../apps/types';
     import type {Writable} from 'svelte/store';
     import type {WindowState} from '../../kernel/services/windowManager.types';
-    import Clock from './Clock.svelte';
     import {getContext} from 'svelte';
     import type {Kernel} from '../../kernel/Kernel';
     import {fly} from 'svelte/transition';
     import {pinnedApps} from '../store/pinnedAppsStore';
-    import {appRegistry} from '../../apps/registry';
+    import DateTime from './DateTime.svelte';
 
     export let windows: Writable<WindowState[]>;
+    export let appRegistry: AppMetadata[] = [];
     export let onOpenApp: (app: AppMetadata) => void = () => {
     };
     export let onToggleLauncher: () => void = () => {
@@ -21,11 +21,11 @@
     let dropIndex: number | null = null;
 
     $: pinnedAppMetadata = $pinnedApps
-        .map(name => appRegistry.find(app => app.name === name))
+        .map(id => appRegistry.find(app => app.id === id))
         .filter((app): app is AppMetadata => !!app);
 
     function onAppClick(app: AppMetadata) {
-        const window = $windows.find(win => win.appId === app.name);
+        const window = $windows.find(win => win.appId === app.id);
         if(window) {
             if(window.isMinimized) {
                 kernel.windowManager.restore(window.id);
@@ -49,11 +49,11 @@
     function handleDrop() {
         if(draggedApp && dropIndex !== null) {
             const currentApps = $pinnedApps;
-            const draggedIndex = currentApps.indexOf(draggedApp.name);
+            const draggedIndex = currentApps.indexOf(draggedApp.id);
 
             const newPinnedApps = [...currentApps];
             newPinnedApps.splice(draggedIndex, 1);
-            newPinnedApps.splice(dropIndex, 0, draggedApp.name);
+            newPinnedApps.splice(dropIndex, 0, draggedApp.id);
 
             pinnedApps.set(newPinnedApps);
         }
@@ -69,7 +69,7 @@
         </div>
 
                 <div class="app-icons-container" role="list" on:dragover={(e) => e.preventDefault()} on:drop={handleDrop}>
-                    {#each pinnedAppMetadata as app, i (app.name)}
+                    {#each pinnedAppMetadata as app, i (app.id)}
                         <div
                             role="listitem"
                             class="app-button-wrapper"
@@ -82,9 +82,13 @@
                             on:click={() => onAppClick(app)}
                     >
                         <span class="icon-wrapper">
-                            <svelte:component this={app.icon} size={24}/>
+                            {#if typeof app.icon === 'string'}
+                                <img src={app.icon} alt={app.name} width="24" height="24"/>
+                            {:else}
+                                <svelte:component this={app.icon} size={24}/>
+                            {/if}
                         </span>
-                        {#if $windows.some(win => win.appId === app.name)}
+                        {#if $windows.some(win => win.appId === app.id)}
                             <span class="running-indicator"></span>
                         {/if}
                     </button>
@@ -93,7 +97,7 @@
         </div>
 
         <div class="right-controls">
-            <Clock/>
+            <DateTime/>
         </div>
     </div>
 {/if}

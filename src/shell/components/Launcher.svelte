@@ -57,7 +57,7 @@
     function isPinned(app: AppMetadata): boolean {
         let isPinned = false;
         const unsubscribe = pinnedApps.subscribe(apps => {
-            isPinned = apps.includes(app.name);
+            isPinned = apps.includes(app.id);
         });
         unsubscribe();
         return isPinned;
@@ -65,10 +65,10 @@
 
     function togglePin(app: AppMetadata) {
         pinnedApps.update(apps => {
-            if(apps.includes(app.name)) {
-                return apps.filter(name => name !== app.name);
+            if(apps.includes(app.id)) {
+                return apps.filter(id => id !== app.id);
             } else {
-                return [...apps, app.name];
+                return [...apps, app.id];
             }
         });
         closeContextMenu();
@@ -101,14 +101,18 @@
             />
         </div>
         <div class="app-grid">
-            {#each filteredApps as app (app.name)}
+            {#each filteredApps as app (app.id)}
                 <button
                         class="app-tile"
                         on:click={() => { onOpenApp(app); onClose(); }}
                         on:contextmenu|preventDefault|stopPropagation={(e) => handleContextMenu(e, app)}
                 >
           <span class="icon-wrapper">
-            <svelte:component this={app.icon} size={28}/>
+            {#if typeof app.icon === 'string'}
+              <img src={app.icon} alt={app.name} width="28" height="28"/>
+            {:else}
+              <svelte:component this={app.icon} size={28}/>
+            {/if}
           </span>
                     <span class="app-name">{app.name}</span>
                 </button>

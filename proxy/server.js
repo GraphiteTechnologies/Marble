@@ -3,6 +3,7 @@ import express from 'express';
 import wisp from "wisp-server-node";
 import path from 'node:path';
 import fs from 'node:fs';
+import axios from 'axios';
 
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
@@ -17,6 +18,15 @@ const server = http.createServer();
 app.get("/uv/uv.config.js", (req, res) => {
     res.sendFile(path.join(__dirname, 'uv', 'uv.config.js'));
 })
+
+app.get('/api/github/commits', async (req, res) => {
+    try {
+        const response = await axios.get('https://api.github.com/repos/GraphiteTechnologies/Marble/commits');
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).send('Error fetching commits from GitHub');
+    }
+});
 
 app.get('/api/wallpapers', (req, res) => {
     const wallpaperDir = path.join(__dirname, '..', 'public', 'wallpapers');

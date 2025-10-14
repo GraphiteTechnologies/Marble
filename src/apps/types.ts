@@ -6,10 +6,12 @@ export enum AppType {
 }
 
 export interface AppMetadata {
+  id?: string;
   name: string;
   type: AppType;
   component: Component;
-  icon: Component;
+  icon: string | Component;
+  url?: string;
   metadata?: {
     width?: number;
     height?: number;

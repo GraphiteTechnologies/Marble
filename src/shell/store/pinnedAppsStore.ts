@@ -1,38 +1,20 @@
-import type {Writable} from 'svelte/store';
-import {writable} from 'svelte/store';
-import type {AppMetadata} from '../../apps/types';
-import {appRegistry} from '../../apps/registry';
+import { writable } from 'svelte/store';
 
 const PINNED_APPS_STORAGE_KEY = 'graphite_pinned_apps';
 
-const defaultPinnedApps = ['Browser', 'Terminal', 'Settings'];
+const defaultPinnedApps = ['browser', 'terminal', 'settings'];
 
-function createPinnedAppsStore(): Writable<string[]> {
+function createPinnedAppsStore() {
     const storedPinnedApps = localStorage.getItem(PINNED_APPS_STORAGE_KEY);
     const initialPinnedApps = storedPinnedApps ? JSON.parse(storedPinnedApps) : defaultPinnedApps;
 
-    const {subscribe, set, update} = writable<string[]>(initialPinnedApps);
+    const store = writable<string[]>(initialPinnedApps);
 
-    return {
-        subscribe,
-        set,
-        update,
-    };
+    store.subscribe(value => {
+        localStorage.setItem(PINNED_APPS_STORAGE_KEY, JSON.stringify(value));
+    });
+
+    return store;
 }
 
 export const pinnedApps = createPinnedAppsStore();
-
-pinnedApps.subscribe(value => {
-    localStorage.setItem(PINNED_APPS_STORAGE_KEY, JSON.stringify(value));
-});
-
-export function getPinnedAppMetadata(): AppMetadata[] {
-    let apps: AppMetadata[] = [];
-    const unsubscribe = pinnedApps.subscribe(pinnedAppNames => {
-        apps = pinnedAppNames
-            .map(name => appRegistry.find(app => app.name === name))
-            .filter((app): app is AppMetadata => !!app);
-    });
-    unsubscribe();
-    return apps;
-}

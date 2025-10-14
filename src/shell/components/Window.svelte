@@ -108,7 +108,15 @@
     <div role="button" tabindex="0" class="title-bar" on:mousedown={onDragStart} on:dblclick={onToggleMaximize}>
         <div class="title-info">
             <div class="app-icon">
-                <svelte:component this={window.icon} size={16}/>
+                {#await window.icon}
+                    <p>...</p>
+                {:then icon}
+                    {#if typeof icon === 'string'}
+                        <img src={icon} alt="icon" width="16" height="16"/>
+                    {:else}
+                        <svelte:component this={icon} size={16}/>
+                    {/if}
+                {/await}
             </div>
             <span class="title">{window.title}</span>
         </div>
@@ -125,7 +133,11 @@
         </div>
     </div>
     <div class="content">
-        <svelte:component this={window.component}/>
+        {#await window.component}
+            <div>Loading...</div>
+        {:then component}
+            <svelte:component this={component} {...window.props} />
+        {/await}
     </div>
     <div role="button" aria-label="Resize window" tabindex="0" class="resizer" on:mousedown={onResizeStart}></div>
 </div>

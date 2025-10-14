@@ -1,10 +1,15 @@
 <script lang="ts">
     import {BareMuxConnection} from '@mercuryworkshop/bare-mux';
     import {onMount} from 'svelte';
-    import {ArrowCircleRight, ArrowLeft, ArrowRight} from 'phosphor-svelte';
+    import {ArrowCircleRight, ArrowLeft, ArrowRight, DownloadSimple} from 'phosphor-svelte';
+    import {webApps} from '../shell/store/webAppsStore';
+
+    export let pwaUrl: string | null = null;
+
+    declare const Ultraviolet: any;
 
     let iframe: HTMLIFrameElement;
-    let inputValue = 'https://www.qwant.com';
+    let inputValue = pwaUrl || 'https://www.qwant.com';
     let loading = false;
     let connection;
     let historyStack: string[] = [];
@@ -22,6 +27,27 @@
         } finally {
             loading = false;
         }
+
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
+                    const newSrc = iframe.getAttribute('src');
+                    if (newSrc && newSrc !== 'about:blank') {
+                        try {
+                            // @ts-ignore
+                            const decodedUrl = window.__uv$config.decodeUrl(newSrc.split('/').pop());
+                            if (decodedUrl !== inputValue) {
+                                inputValue = decodedUrl;
+                            }
+                        } catch (e) {
+                            console.error('Failed to decode URL:', e);
+                        }
+                    }
+                }
+            }
+        });
+
+        observer.observe(iframe, { attributes: true });
     });
 
     async function navigate(urlOverride?: string) {
@@ -81,6 +107,7 @@
 </script>
 
 <div class="app-container browser-app">
+    {#if !pwaUrl}
     <div class="toolbar">
         <div class="nav-buttons">
             <button on:click={goBack} disabled={currentIndex <= 0} title="Back">
@@ -88,6 +115,9 @@
             </button>
             <button on:click={goForward} disabled={currentIndex >= historyStack.length - 1} title="Forward">
                 <ArrowRight size={22} weight="bold"/>
+            </button>
+            <button on:click={async () => await webApps.addWebApp(inputValue)} title="Add to launcher">
+                <DownloadSimple size={22} weight="bold"/>
             </button>
         </div>
 
@@ -106,6 +136,7 @@
             {/if}
         </button>
     </div>
+    {/if}
 
     <div class="content">
         <iframe

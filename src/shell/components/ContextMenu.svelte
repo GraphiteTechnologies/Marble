@@ -1,8 +1,27 @@
 <script lang="ts">
   import { fly } from 'svelte/transition';
+  import { getContext } from 'svelte';
+  import type { Kernel } from '../../kernel/Kernel';
+  import { appRegistry } from '../../apps/registry';
 
   export let x: number;
   export let y: number;
+
+  const kernel = getContext<Kernel>('kernel');
+
+  function openSettings(section: string) {
+    const settingsApp = appRegistry.find(app => app.id === 'settings');
+    if (settingsApp) {
+      kernel.windowManager.open({ ...settingsApp, props: { section } });
+    }
+  }
+
+  function openAbout() {
+    const aboutApp = appRegistry.find(app => app.id === 'about');
+    if (aboutApp) {
+      kernel.windowManager.open(aboutApp);
+    }
+  }
 </script>
 
 <div
@@ -12,10 +31,10 @@
   in:fly={{ y: 10, duration: 100, opacity: 0 }}
 >
   <ul>
-    <li>Change Wallpaper</li>
-    <li>Settings</li>
+    <li on:click={() => openSettings('appearance')}>Change Wallpaper</li>
+    <li on:click={() => openSettings('appearance')}>Settings</li>
     <li class="separator"></li>
-    <li>About Graphite OS</li>
+    <li on:click={openAbout}>About Graphite OS</li>
   </ul>
 </div>
 

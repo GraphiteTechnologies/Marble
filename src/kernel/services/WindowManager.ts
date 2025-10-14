@@ -26,10 +26,10 @@ export class WindowManager {
         this.subscriptions.forEach(callback => callback(this.windows));
     }
 
-    public open(app: AppMetadata): void {
+    public open(app: AppMetadata & { props?: Record<string, any> }): void {
         const newWindow: WindowState = {
             id: `win-${this.nextWindowId++}`,
-            appId: app.name,
+            appId: app.id,
             title: app.name,
             component: app.component,
             icon: app.icon,
@@ -39,6 +39,7 @@ export class WindowManager {
             isFocused: true,
             isMinimized: false,
             isMaximized: false,
+            props: { ...app.props, ...(app.url ? { pwaUrl: app.url } : {}) },
         };
 
         this.windows.forEach(win => win.isFocused = false);
