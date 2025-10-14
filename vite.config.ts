@@ -6,10 +6,14 @@ export default defineConfig({
     plugins: [svelte()],
     preview: {
         allowedHosts: [
-            "graphite.thoq.dev"
+            "graphite.thoq.dev",
+            "localhost"
         ]
     },
     server: {
+        allowedHosts: [
+            "graphite.thoq.dev"
+        ],
         proxy: {
             '/baremux/': {
                 target: 'http://localhost:4000',
