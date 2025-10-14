@@ -1,54 +1,75 @@
 <script lang="ts">
-    import {BareMuxConnection} from '@mercuryworkshop/bare-mux';
     import {onMount} from 'svelte';
     import {ArrowCircleRight, ArrowLeft, ArrowRight, DownloadSimple} from 'phosphor-svelte';
     import {webApps} from '../shell/store/webAppsStore';
 
     export let pwaUrl: string | null = null;
 
-    declare const Ultraviolet: any;
-
     let iframe: HTMLIFrameElement;
-    let inputValue = pwaUrl || 'https://www.qwant.com';
+    let inputValue = pwaUrl || 'https://www.google.com';
     let loading = false;
-    let connection;
     let historyStack: string[] = [];
     let currentIndex = -1;
+    // @ts-ignore
+    let scramjet;
+    // @ts-ignore
+    let connection;
 
     onMount(async() => {
+        // @ts-ignore
+        const { ScramjetController } = globalThis.$scramjetLoadController();
+        scramjet = new ScramjetController({
+            files: {
+                wasm: '/scram/scramjet.wasm.wasm',
+                all: '/scram/scramjet.all.js',
+                sync: '/scram/scramjet.sync.js',
+            },
+        });
+        await scramjet.init();
+
+        // @ts-ignore
+        connection = new BareMux.BareMuxConnection("/baremux/worker.js");
+
         loading = true;
         try {
-            await navigator.serviceWorker.register('/uv.sw.js');
-            await navigator.serviceWorker.ready;
-            console.log('Ultraviolet service worker is active.');
+            await registerSW();
             await navigate();
         } catch(error) {
-            console.error('Ultraviolet initialization failed:', error);
+            console.error('Scramjet initialization failed:', error);
         } finally {
             loading = false;
         }
-
-        const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'src') {
-                    const newSrc = iframe.getAttribute('src');
-                    if (newSrc && newSrc !== 'about:blank') {
-                        try {
-                            // @ts-ignore
-                            const decodedUrl = window.__uv$config.decodeUrl(newSrc.split('/').pop());
-                            if (decodedUrl !== inputValue) {
-                                inputValue = decodedUrl;
-                            }
-                        } catch (e) {
-                            console.error('Failed to decode URL:', e);
-                        }
-                    }
-                }
-            }
-        });
-
-        observer.observe(iframe, { attributes: true });
     });
+
+    async function registerSW() {
+        if(!navigator.serviceWorker) {
+            if(
+                location.protocol !== "https:" &&
+                !["localhost", "127.0.0.1"].includes(location.hostname)
+            )
+                throw new Error("Service workers cannot be registered without https.");
+
+            throw new Error("Your browser doesn't support service workers.");
+        }
+
+        await navigator.serviceWorker.register('/sw.js');
+    }
+
+    // @ts-ignore
+    function search(input, template) {
+        try {
+            return new URL(input).toString();
+        } catch(err) {
+        }
+
+        try {
+            const url = new URL(`http://${input}`);
+            if(url.hostname.includes(".")) return url.toString();
+        } catch(err) {
+        }
+
+        return template.replace("%s", encodeURIComponent(input));
+    }
 
     async function navigate(urlOverride?: string) {
         loading = true;
@@ -58,33 +79,27 @@
             return;
         }
 
-        if(!/^(https?:\/\/)/.test(url)) {
-            url = 'https://' + url;
+        const wispUrl = (location.protocol === "https:" ? "wss" : "ws") + "://" + location.host + "/wisp/";
+        // @ts-ignore
+        if((await connection.getTransport()) !== "/epoxy/index.mjs") {
+            // @ts-ignore
+            await connection.setTransport("/epoxy/index.mjs", [{wisp: wispUrl}]);
         }
 
-        try {
-            connection = new BareMuxConnection("/baremux/worker.js");
-            const wispUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/wisp/';
-
-            if(await connection.getTransport() !== "/epoxy/index.mjs")
-                await connection.setTransport("/epoxy/index.mjs", [{wisp: wispUrl}]);
-
-            if(iframe) {
-                // @ts-ignore
-                iframe.src = window.__uv$config.prefix + window.__uv$config.encodeUrl(url);
-            }
-
-            // update history
-            if(currentIndex === -1 || historyStack[currentIndex] !== url) {
-                historyStack = historyStack.slice(0, currentIndex + 1);
-                historyStack.push(url);
-                currentIndex = historyStack.length - 1;
-            }
-
-            inputValue = url;
-        } catch(err) {
-            console.log(err);
+        const finalUrl = search(url, "https://www.google.com/search?q=%s");
+        if(iframe) {
+            // @ts-ignore
+            iframe.src = scramjet.encodeUrl(finalUrl);
         }
+
+        if(currentIndex === -1 || historyStack[currentIndex] !== finalUrl) {
+            historyStack = historyStack.slice(0, currentIndex + 1);
+            historyStack.push(finalUrl);
+            currentIndex = historyStack.length - 1;
+        }
+
+        inputValue = finalUrl;
+        loading = false;
     }
 
     function onIframeLoad() {
@@ -108,34 +123,34 @@
 
 <div class="app-container browser-app">
     {#if !pwaUrl}
-    <div class="toolbar">
-        <div class="nav-buttons">
-            <button on:click={goBack} disabled={currentIndex <= 0} title="Back">
-                <ArrowLeft size={22} weight="bold"/>
-            </button>
-            <button on:click={goForward} disabled={currentIndex >= historyStack.length - 1} title="Forward">
-                <ArrowRight size={22} weight="bold"/>
-            </button>
-            <button on:click={async () => await webApps.addWebApp(inputValue)} title="Add to launcher">
-                <DownloadSimple size={22} weight="bold"/>
+        <div class="toolbar">
+            <div class="nav-buttons">
+                <button on:click={goBack} disabled={currentIndex <= 0} title="Back">
+                    <ArrowLeft size={22} weight="bold"/>
+                </button>
+                <button on:click={goForward} disabled={currentIndex >= historyStack.length - 1} title="Forward">
+                    <ArrowRight size={22} weight="bold"/>
+                </button>
+                <button on:click={async () => await webApps.addWebApp(inputValue)} title="Add to launcher">
+                    <DownloadSimple size={22} weight="bold"/>
+                </button>
+            </div>
+
+            <input
+                    type="text"
+                    bind:value={inputValue}
+                    on:keydown={(e) => e.key === 'Enter' && navigate()}
+                    placeholder="Search the web freely"
+            />
+
+            <button class="go" on:click={() => navigate()} disabled={loading}>
+                {#if loading}
+                    <span class="loader"></span>
+                {:else}
+                    <ArrowCircleRight size={22} weight="fill"/>
+                {/if}
             </button>
         </div>
-
-        <input
-                type="text"
-                bind:value={inputValue}
-                on:keydown={(e) => e.key === 'Enter' && navigate()}
-                placeholder="Search or enter address"
-        />
-
-        <button class="go" on:click={navigate} disabled={loading}>
-            {#if loading}
-                <span class="loader"></span>
-            {:else}
-                <ArrowCircleRight size={22} weight="fill"/>
-            {/if}
-        </button>
-    </div>
     {/if}
 
     <div class="content">

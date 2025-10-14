@@ -20,7 +20,7 @@ export default defineConfig({
         changeOrigin: true,
         ws: true,
       },
-      '/uv/': {
+      '/scram/': {
         target: 'http://localhost:4000',
         changeOrigin: true,
       },
