@@ -112,7 +112,7 @@
         background-color: var(--ui-transparent-background);
         backdrop-filter: blur(10px);
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
         padding: 0 16px;
         z-index: 10000;
@@ -122,22 +122,22 @@
         border-top-right-radius: 24px;
     }
 
-    .left-controls, .right-controls {
-        flex: 1;
-        display: flex;
-        align-items: center;
+    .left-controls {
+        position: absolute;
+        left: 16px;
     }
 
     .right-controls {
-        justify-content: flex-end;
+        position: absolute;
+        right: 16px;
     }
 
     .launcher-button {
-        width: 16px;
-        height: 16px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
         background-color: transparent;
-        border: 2px solid #e8eaed;
+        border: 2px solid white;
         cursor: pointer;
         transition: background-color 0.2s;
     }
