@@ -14,6 +14,7 @@
     import ContextMenu from './components/ContextMenu.svelte';
     import CalendarPopup from './components/CalendarPopup.svelte';
     import ClockDetailsPopup from './components/ClockDetailsPopup.svelte';
+    import Toaster from './components/Toaster.svelte';
 
     export let kernel: Kernel;
 
@@ -94,4 +95,5 @@
                 onToggleLauncher={() => launcherOpen = !launcherOpen}
         />
     </Desktop>
+    <Toaster />
 </div>

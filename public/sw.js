@@ -1,31 +1,16 @@
-// noinspection JSCheckFunctionSignatures,JSUnresolvedReference
+importScripts('/scram/scramjet.all.js');
 
-importScripts("/scramjet/scramjet.all.js");
-
+const {ScramjetServiceWorker} = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();
 
 async function handleRequest(event) {
-    try {
-        if(scramjet.handleRequest(event))
-            return;
+    await scramjet.loadConfig();
+    if(scramjet.route(event))
+        return scramjet.fetch(event);
 
-        event.respondWith(
-            (async() => {
-                await scramjet.config();
-                if(await scramjet.route(event)) {
-                    return await scramjet.fetch(event);
-                } else {
-                    return await fetch(event.request);
-                }
-            })()
-        );
-    } catch(exception) {
-        event.respondWith(
-            new Response(exception.toString(), {
-                status: 500,
-            })
-        );
-    }
+    return fetch(event.request);
 }
 
-self.addEventListener("fetch", handleRequest);
+self.addEventListener('fetch', event => {
+    event.respondWith(handleRequest(event));
+});

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { webApps } from '../shell/store/webAppsStore';
+  import { sendToast } from '../shell/store/toasterStore';
   import type { AppMetadata } from './types';
   import PhosphorIcon from '../shell/components/PhosphorIcon.svelte';
 
@@ -25,6 +26,7 @@
 
   function install(app: AppStoreApp) {
     webApps.addWebApp(app.url);
+    sendToast(`Installed ${app.name}`);
   }
 
   function isInstalled(app: AppStoreApp) {

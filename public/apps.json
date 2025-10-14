@@ -23,5 +23,10 @@
     "name": "Google Docs",
     "author": "Google",
     "url": "https://docs.google.com"
+  },
+  {
+    "name": "GitHub",
+    "author": "Microsoft",
+    "url": "https://github.com"
   }
 ]
