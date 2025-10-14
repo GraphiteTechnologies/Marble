@@ -4,6 +4,7 @@ import { browser } from './browser';
 import { terminal } from './terminal';
 import { settings } from './settings';
 import { about } from './about';
+import { appStore } from './appStore';
 
 export const appRegistry: AppMetadata[] = [
   welcome,
@@ -11,4 +12,5 @@ export const appRegistry: AppMetadata[] = [
   terminal,
   settings,
   about,
+  appStore,
 ];

@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Celestial",
+    "author": "Cirkl Labs",
+    "url": "https://www.cirkl.ai"
+  },
+  {
+    "name": "VSCode",
+    "author": "Microsoft",
+    "url": "https://vscode.dev"
+  },
+  {
+    "name": "Excalidraw",
+    "author": "Excalidraw",
+    "url": "https://excalidraw.com"
+  },
+  {
+    "name": "Figma",
+    "author": "Figma",
+    "url": "https://figma.com"
+  },
+  {
+    "name": "Google Docs",
+    "author": "Google",
+    "url": "https://docs.google.com"
+  }
+]

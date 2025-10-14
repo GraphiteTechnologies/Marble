@@ -36,7 +36,7 @@
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-        if(event.key === 'Meta') {
+        if(event.key === 'Meta' && event.shiftKey) {
             event.preventDefault();
             launcherOpen = !launcherOpen;
         }

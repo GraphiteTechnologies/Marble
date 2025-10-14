@@ -1,3 +1,5 @@
+// noinspection JSCheckFunctionSignatures,JSUnresolvedReference
+
 importScripts("/scramjet/scramjet.all.js");
 
 const scramjet = new ScramjetServiceWorker();

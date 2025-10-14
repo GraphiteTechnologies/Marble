@@ -58,9 +58,14 @@ function createWebAppsStore() {
     }
   }
 
+  function remove(id: string) {
+    update(currentApps => currentApps.filter(app => app.id !== id));
+  }
+
   return {
     subscribe,
     addWebApp,
+    remove,
   };
 }
 

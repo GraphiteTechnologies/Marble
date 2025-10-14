@@ -3,6 +3,7 @@
     import {fade, fly} from 'svelte/transition';
     import {onMount, tick} from 'svelte';
     import {pinnedApps} from '../store/pinnedAppsStore';
+    import {webApps} from '../store/webAppsStore';
 
     export let appRegistry: AppMetadata[] = [];
     export let onOpenApp: (app: AppMetadata) => void = () => {
@@ -73,6 +74,10 @@
         });
         closeContextMenu();
     }
+    function uninstall(app: AppMetadata) {
+        webApps.remove(app.id);
+        closeContextMenu();
+    }
 </script>
 
 <div
@@ -131,6 +136,10 @@
         <button on:click={() => togglePin(contextMenu.app)}>
             {isPinned(contextMenu.app) ? 'Unpin from Dock' : 'Pin to Dock'}
         </button>
+        {#if contextMenu.app.url}
+            <div class="divider" />
+            <button on:click={() => uninstall(contextMenu.app)}>Uninstall</button>
+        {/if}
     </div>
 {/if}
 
@@ -145,6 +154,11 @@
         display: flex;
         align-items: flex-end;
         justify-content: flex-start;
+    }
+    .divider {
+        height: 1px;
+        background-color: var(--border-color);
+        margin: var(--spacing-small) 0;
     }
 
     .launcher {
