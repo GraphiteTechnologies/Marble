@@ -19,6 +19,7 @@
     "start:proxy": "node proxy/server.js",
     "start:ui": "npm run preview --port 5173",
     "start": "concurrently \"npm run start:ui\" \"npm run start:host\" \"npm run start:proxy\"",
+    "start:no-host": "concurrently \"npm run start:ui\" \"npm run start:proxy\"",
     "ez-boot": "npm i && npm run build && npm run start"
   },
   "devDependencies": {
