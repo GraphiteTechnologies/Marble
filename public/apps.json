@@ -2,51 +2,61 @@
   {
     "name": "Celestial",
     "author": "Cirkl Labs",
-    "url": "https://www.cirkl.ai"
+    "url": "https://www.cirkl.ai",
+    "category": "Productivity"
   },
   {
     "name": "Undertale",
     "author": "Toby Fox",
-    "url": "https://ut10-battle.undertale.com/"
+    "url": "https://ut10-battle.undertale.com/",
+    "category": "Games"
   },
   {
     "name": "VSCode",
     "author": "Microsoft",
-    "url": "https://vscode.dev"
+    "url": "https://vscode.dev",
+    "category": "Developer Tools"
   },
   {
     "name": "Excalidraw",
     "author": "Excalidraw",
-    "url": "https://excalidraw.com"
+    "url": "https://excalidraw.com",
+    "category": "Productivity"
   },
   {
     "name": "Figma",
     "author": "Figma",
-    "url": "https://figma.com"
+    "url": "https://figma.com",
+    "category": "Design"
   },
   {
     "name": "Google Docs",
     "author": "Google",
-    "url": "https://docs.google.com"
+    "url": "https://docs.google.com",
+    "category": "Productivity"
   },
   {
     "name": "GitHub",
     "author": "Microsoft",
-    "url": "https://github.com"
+    "url": "https://github.com",
+    "category": "Developer Tools"
   },
   {
     "name": "Poki",
     "author": "Poki",
-    "url": "https://poki.com"
+    "url": "https://poki.com",
+    "category": "Games"
   },
   {
     "name": "Discord",
     "author": "Discord",
-    "url": "https://discord.com"
+    "url": "https://discord.com",
+    "category": "Social"
   },
   {
     "name": "Geforce Now",
     "author": "nVidia",
-    "url": "https://play.geforcenow.com/"
+    "url": "https://play.geforcenow.com/",
+    "category": "Games"
   }
 ]
