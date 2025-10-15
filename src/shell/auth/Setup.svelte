@@ -7,7 +7,7 @@
     const dispatch = createEventDispatcher();
     const kernel = getContext<Kernel>('kernel');
 
-    let step = 0;
+    let step = -1;
     let username = '';
     let password = '';
     let confirmPassword = '';
@@ -24,6 +24,7 @@
     onMount(() => {
         const wallpaperFiles = kernel.vfs.readDir('/usr/share/wallpapers');
         wallpapers = wallpaperFiles.map(file => file.name);
+        step = 0;
     });
 
     const nextStep = () => {
@@ -111,25 +112,25 @@
 <div class="auth-container-wrapper" bind:this={container}>
     <div class="setup-container">
         {#if step === 0}
-            <div class="step welcome-layout" in:fly={{ y: 20, duration: 500 }} out:fade>
+            <div class="step welcome-layout">
                 <div class="welcome-text">
                     <div>
-                        <h1>Welcome your new Grafbook</h1>
-                        <p>Fast. Secure. Effortless.</p>
+                        <h1 in:fly={{ y: 20, duration: 500, delay: 100 }} out:fade>Welcome your new Grafbook</h1>
+                        <p in:fly={{ y: 20, duration: 500, delay: 200 }} out:fade>Fast. Secure. Effortless.</p>
                     </div>
-                    <button on:click={nextStep}>Get started</button>
+                    <button on:click={nextStep} in:fly={{ y: 20, duration: 500, delay: 300 }} out:fade>Get started</button>
                 </div>
-                <div class="welcome-image">
+                <div class="welcome-image" in:fly={{ y: 20, duration: 500, delay: 400 }} out:fade>
                     <img src="/assets/setup/setup.png" alt="Setup illustration"/>
                 </div>
             </div>
         {/if}
 
         {#if step === 1}
-            <div class="step creation-step" in:fly={{ y: 20, duration: 500 }} out:fade>
+            <div class="step creation-step">
                 <div class="pfp-section">
-                    <h2>Choose your picture</h2>
-                    <div class="pfp-selection">
+                    <h2 in:fly={{ y: 20, duration: 500, delay: 100 }} out:fade>Choose your picture</h2>
+                    <div class="pfp-selection" in:fly={{ y: 20, duration: 500, delay: 200 }} out:fade>
                         {#each defaultPfps as defaultPfp}
                             <img
                                     src={defaultPfp}
@@ -144,18 +145,18 @@
                             <input id="pfp-upload" type="file" accept="image/*" on:change={handlePfpUpload}/>
                         </label>
                     </div>
-                    <img src={pfp} alt="Profile picture" class="pfp-preview"/>
+                    <img src={pfp} alt="Profile picture" class="pfp-preview" in:fly={{ y: 20, duration: 500, delay: 300 }} out:fade/>
                 </div>
-                <div class="divider"/>
+                <div class="divider" in:fade={{ delay: 400 }} out:fade/>
                 <div class="form-section">
-                    <h2>Create your account</h2>
-                    <input type="text" placeholder="Username" bind:value={username}/>
-                    <input type="password" placeholder="Password" bind:value={password}/>
-                    <input type="password" placeholder="Confirm Password" bind:value={confirmPassword}/>
+                    <h2 in:fly={{ y: 20, duration: 500, delay: 500 }} out:fade>Create your account</h2>
+                    <input type="text" placeholder="Username" bind:value={username} in:fly={{ y: 20, duration: 500, delay: 600 }} out:fade/>
+                    <input type="password" placeholder="Password" bind:value={password} in:fly={{ y: 20, duration: 500, delay: 700 }} out:fade/>
+                    <input type="password" placeholder="Confirm Password" bind:value={confirmPassword} in:fly={{ y: 20, duration: 500, delay: 800 }} out:fade/>
                     {#if !passwordsMatch && confirmPassword}
                         <p class="error" in:fade>Passwords do not match.</p>
                     {/if}
-                    <div class="buttons">
+                    <div class="buttons" in:fly={{ y: 20, duration: 500, delay: 900 }} out:fade>
                         <button on:click={prevStep}>Back</button>
                         <button on:click={nextStep} disabled={!username || !password || !passwordsMatch}>Next</button>
                     </div>
@@ -164,9 +165,9 @@
         {/if}
 
         {#if step === 2}
-            <div class="step" in:fly={{ y: 20, duration: 500 }} out:fade>
-                <h2>Choose your wallpaper</h2>
-                <div class="wallpaper-selection">
+            <div class="step">
+                <h2 in:fly={{ y: 20, duration: 500, delay: 100 }} out:fade>Choose your wallpaper</h2>
+                <div class="wallpaper-selection" in:fly={{ y: 20, duration: 500, delay: 200 }} out:fade>
                     {#each wallpapers as wallpaper}
                         <div class="wallpaper-preview" class:selected={selectedWallpaper === wallpaper}
                              on:click={() => changeWallpaper(wallpaper)}>
@@ -174,7 +175,7 @@
                         </div>
                     {/each}
                 </div>
-                <div class="buttons">
+                <div class="buttons" in:fly={{ y: 20, duration: 500, delay: 300 }} out:fade>
                     <button on:click={prevStep}>Back</button>
                     <button on:click={createAccount}>Finish setup</button>
                 </div>
