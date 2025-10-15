@@ -1,11 +1,9 @@
-<!--suppress TypeScriptUnresolvedReference -->
 <script lang="ts">
     import {getContext, onMount} from 'svelte';
     import type {Kernel} from '../kernel/Kernel';
     import {accounts, type User} from '../shell/store/accountStore';
 
     export let section: string | null = null;
-
     let wallpapers: string[] = [];
     let selectedWallpaper: string = '';
     let activeSection = section || 'appearance';
@@ -27,12 +25,12 @@
         const wallpaperFiles = vfs.readDir('/usr/share/wallpapers');
         wallpapers = wallpaperFiles.map(file => file.name);
 
-        const savedWallpaper = localStorage.getItem('wallpaper');
-        if(savedWallpaper) {
-            if(savedWallpaper.startsWith('data:')) {
+        const currentUser = accounts.getCurrentUser();
+        if(currentUser?.wallpaper) {
+            if(currentUser.wallpaper.startsWith('data:')) {
                 selectedWallpaper = 'custom';
             } else {
-                selectedWallpaper = savedWallpaper;
+                selectedWallpaper = currentUser.wallpaper;
             }
         } else {
             selectedWallpaper = 'shards.jpeg';
@@ -40,29 +38,22 @@
     });
 
     function changeWallpaper(wallpaper: string) {
+        if(!currentUser) return;
+        accounts.updateUser(currentUser.id, {wallpaper});
         selectedWallpaper = wallpaper;
-        localStorage.setItem('wallpaper', selectedWallpaper);
-        const desktop = document.querySelector('.desktop') as HTMLElement;
-
-        if(desktop)
-            desktop.style.backgroundImage = `url(/wallpapers/${selectedWallpaper})`;
     }
 
     function handleWallpaperUpload(event: Event) {
         const target = event.target as HTMLInputElement;
         const file = target.files?.[0];
 
-        if(!file)
+        if(!file || !currentUser)
             return;
 
         const reader = new FileReader();
         reader.onload = () => {
             const dataUrl = reader.result as string;
-            localStorage.setItem('wallpaper', dataUrl);
-            const desktop = document.querySelector('.desktop') as HTMLElement;
-            if(desktop) {
-                desktop.style.backgroundImage = `url(${dataUrl})`;
-            }
+            accounts.updateUser(currentUser!.id, {wallpaper: dataUrl});
             selectedWallpaper = 'custom';
         };
         reader.readAsDataURL(file);
@@ -241,6 +232,7 @@
         display: flex;
         height: 100%;
     }
+
 
     .sidebar {
         width: 200px;

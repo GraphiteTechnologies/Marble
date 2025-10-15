@@ -1,24 +1,15 @@
 <script lang="ts">
-    import {onMount} from 'svelte';
+    import { accounts } from '../store/accountStore';
 
-    onMount(() => {
-        const savedWallpaper = localStorage.getItem('wallpaper');
-        if(!savedWallpaper)
-            return;
+    const currentUser = accounts.getCurrentUser();
+    const wallpaper = currentUser?.wallpaper || 'shards.jpeg';
 
-        const desktop = document.querySelector('.desktop') as HTMLElement;
-        if(!desktop)
-            return;
-
-        if(savedWallpaper.startsWith('data:')) {
-            desktop.style.backgroundImage = `url(${savedWallpaper})`;
-        } else {
-            desktop.style.backgroundImage = `url(/wallpapers/${savedWallpaper})`;
-        }
-    });
+    $: background = wallpaper.startsWith('data:')
+        ? `url(${wallpaper})`
+        : `url(/wallpapers/${wallpaper})`;
 </script>
 
-<main class="desktop select-none">
+<main class="desktop select-none" style="background-image: {background}">
     <slot></slot>
 </main>
 
@@ -26,7 +17,6 @@
     .desktop {
         width: 100vw;
         height: 100vh;
-        background-image: url('/wallpapers/shards.jpeg');
         background-size: cover;
         background-position: center;
         overflow: hidden;

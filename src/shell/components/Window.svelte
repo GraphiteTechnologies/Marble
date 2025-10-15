@@ -221,7 +221,6 @@
 
     .content {
         flex-grow: 1;
-        background-color: #2d2e30;
         min-height: 0;
     }
 

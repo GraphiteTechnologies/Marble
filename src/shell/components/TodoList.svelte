@@ -27,7 +27,7 @@
 
 <div class="todo-container">
     <div class="header">
-        <h3>{$selectedDateStore ? `Tasks for ${formatDate($selectedDateStore)}` : 'All Tasks'}</h3>
+        <h3>{$selectedDateStore ? `Events on ${formatDate($selectedDateStore)}` : 'All Events'}</h3>
     </div>
     <div class="todo-list">
         {#each filteredTodos as todo (todo.id)}
@@ -152,6 +152,12 @@
         cursor: pointer;
         opacity: 0.5;
         transition: opacity 0.2s, color 0.2s;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
     }
 
     .todo-item:hover .remove {
@@ -166,6 +172,8 @@
     .add-todo {
         display: flex;
         gap: 8px;
+        padding-right: 16px;
+        box-sizing: border-box;
     }
 
     .add-todo input {
@@ -188,20 +196,23 @@
     }
 
     .add-button {
-        background-color: var(--accent-color);
+        background-color: transparent;
         border: none;
-        color: var(--primary-background);
+        color: var(--primary-text);
         border-radius: 6px;
-        padding: 0 10px;
+        padding: 0;
+        width: 36px;
+        height: 36px;
         cursor: pointer;
         font-weight: 500;
-        transition: background-color 0.2s;
+        transition: background-color 0.2s, color 0.2s;
         display: flex;
         align-items: center;
         justify-content: center;
     }
 
     .add-button:hover {
-        background-color: var(--accent-color-hover);
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--accent-color-hover);
     }
 </style>

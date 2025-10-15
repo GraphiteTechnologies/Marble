@@ -2,6 +2,7 @@
     import {createEventDispatcher, getContext, onMount} from 'svelte';
     import {accounts} from '../store/accountStore';
     import type {Kernel} from '../../kernel/Kernel';
+    import {fade, fly} from 'svelte/transition';
 
     const dispatch = createEventDispatcher();
     const kernel = getContext<Kernel>('kernel');
@@ -9,9 +10,11 @@
     let step = 0;
     let username = '';
     let password = '';
+    let confirmPassword = '';
     let pfp = '/assets/pfp/default.png';
     let wallpapers: string[] = [];
     let selectedWallpaper = 'shards.jpeg';
+    let container: HTMLElement;
 
     const defaultPfps = [
         '/assets/pfp/default.png',
@@ -33,8 +36,7 @@
 
     const createAccount = async() => {
         try {
-            await accounts.createUser(username, password, pfp);
-            localStorage.setItem('wallpaper', selectedWallpaper);
+            await accounts.createUser(username, password, pfp, selectedWallpaper);
             dispatch('accountCreated');
         } catch {}
     };
@@ -94,17 +96,22 @@
 
     function changeWallpaper(wallpaper: string) {
         selectedWallpaper = wallpaper;
-        const authContainer = document.querySelector('.auth-container-wrapper') as HTMLElement;
-        if(authContainer) {
-            authContainer.style.setProperty('--bg-image', `url(/wallpapers/${selectedWallpaper})`);
-        }
+    }
+
+    $: passwordsMatch = password === confirmPassword;
+
+    $: if (container) {
+        const background = selectedWallpaper.startsWith('data:')
+            ? `url(${selectedWallpaper})`
+            : `url(/wallpapers/${selectedWallpaper})`;
+        container.style.setProperty('--bg-image', background);
     }
 </script>
 
-<div class="auth-container-wrapper">
+<div class="auth-container-wrapper" bind:this={container}>
     <div class="setup-container">
         {#if step === 0}
-            <div class="step welcome-layout">
+            <div class="step welcome-layout" in:fly={{ y: 20, duration: 500 }} out:fade>
                 <div class="welcome-text">
                     <div>
                         <h1>Welcome your new Grafbook</h1>
@@ -119,45 +126,45 @@
         {/if}
 
         {#if step === 1}
-            <div class="step">
-                <h2>Create your account</h2>
-                <input type="text" placeholder="Username" bind:value={username}/>
-                <input type="password" placeholder="Password" bind:value={password}/>
-                <div class="buttons">
-                    <button on:click={prevStep}>Back</button>
-                    <button on:click={nextStep} disabled={!username || !password}>Next</button>
+            <div class="step creation-step" in:fly={{ y: 20, duration: 500 }} out:fade>
+                <div class="pfp-section">
+                    <h2>Choose your picture</h2>
+                    <div class="pfp-selection">
+                        {#each defaultPfps as defaultPfp}
+                            <img
+                                    src={defaultPfp}
+                                    alt="Profile picture"
+                                    class="pfp-option"
+                                    class:selected={pfp === defaultPfp}
+                                    on:click={() => (pfp = defaultPfp)}
+                            />
+                        {/each}
+                        <label for="pfp-upload" class="pfp-upload-label">
+                            +
+                            <input id="pfp-upload" type="file" accept="image/*" on:change={handlePfpUpload}/>
+                        </label>
+                    </div>
+                    <img src={pfp} alt="Profile picture" class="pfp-preview"/>
+                </div>
+                <div class="divider"/>
+                <div class="form-section">
+                    <h2>Create your account</h2>
+                    <input type="text" placeholder="Username" bind:value={username}/>
+                    <input type="password" placeholder="Password" bind:value={password}/>
+                    <input type="password" placeholder="Confirm Password" bind:value={confirmPassword}/>
+                    {#if !passwordsMatch && confirmPassword}
+                        <p class="error" in:fade>Passwords do not match.</p>
+                    {/if}
+                    <div class="buttons">
+                        <button on:click={prevStep}>Back</button>
+                        <button on:click={nextStep} disabled={!username || !password || !passwordsMatch}>Next</button>
+                    </div>
                 </div>
             </div>
         {/if}
 
         {#if step === 2}
-            <div class="step">
-                <h2>Choose your profile picture</h2>
-                <div class="pfp-selection">
-                    {#each defaultPfps as defaultPfp}
-                        <img
-                                src={defaultPfp}
-                                alt="Profile picture"
-                                class="pfp-option"
-                                class:selected={pfp === defaultPfp}
-                                on:click={() => (pfp = defaultPfp)}
-                        />
-                    {/each}
-                    <label for="pfp-upload" class="pfp-upload-label">
-                        +
-                        <input id="pfp-upload" type="file" accept="image/*" on:change={handlePfpUpload}/>
-                    </label>
-                </div>
-                <img src={pfp} alt="Profile picture" class="pfp-preview"/>
-                <div class="buttons">
-                    <button on:click={prevStep}>Back</button>
-                    <button on:click={nextStep}>Next</button>
-                </div>
-            </div>
-        {/if}
-
-        {#if step === 3}
-            <div class="step">
+            <div class="step" in:fly={{ y: 20, duration: 500 }} out:fade>
                 <h2>Choose your wallpaper</h2>
                 <div class="wallpaper-selection">
                     {#each wallpapers as wallpaper}
@@ -177,6 +184,56 @@
 </div>
 
 <style>
+    .auth-container-wrapper {
+        transition: background-image 0.5s ease-in-out;
+    }
+
+    .setup-container {
+        position: relative;
+    }
+
+    .step {
+        position: absolute;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input {
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    input:focus {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+
+    .error {
+        color: #ff9a9a;
+        font-size: 14px;
+        margin-top: -5px;
+        margin-bottom: 5px;
+    }
+
+    .creation-step {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 40px;
+    }
+
+    .pfp-section, .form-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .divider {
+        width: 1px;
+        background-color: #444;
+        height: 300px;
+    }
+
     .pfp-selection {
         display: flex;
         gap: 10px;
@@ -184,13 +241,17 @@
         margin-bottom: 20px;
     }
 
-    .pfp-option {
-        width: 60px;
-        height: 60px;
+    .pfp-option, .pfp-upload-label {
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         cursor: pointer;
         border: 2px solid transparent;
-        transition: border-color 0.2s;
+        transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .pfp-option:hover, .pfp-upload-label:hover {
+        transform: scale(1.05);
     }
 
     .pfp-option.selected {
@@ -198,19 +259,28 @@
     }
 
     .pfp-upload-label {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         background: #333;
-        cursor: pointer;
-        font-size: 24px;
+        font-size: 32px;
     }
 
     #pfp-upload {
         display: none;
+    }
+
+    .pfp-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+        transition: transform 0.3s;
+    }
+
+    .pfp-section:hover .pfp-preview {
+        transform: scale(1.03);
     }
 
     .wallpaper-selection {
@@ -227,10 +297,7 @@
         border: 2px solid transparent;
         border-radius: 8px;
         overflow: hidden;
-    }
-
-    .wallpaper-preview.selected {
-        border-color: white;
+        transition: border-color 0.2s, transform 0.2s;
     }
 
     .wallpaper-preview img {

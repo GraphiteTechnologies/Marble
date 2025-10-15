@@ -129,7 +129,7 @@
 
     .right-controls {
         position: absolute;
-        right: 16px;
+        right: 8px;
     }
 
     .launcher-button {

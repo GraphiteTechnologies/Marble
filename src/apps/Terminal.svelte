@@ -2,8 +2,13 @@
     import {getContext, onMount} from 'svelte';
     import type {Kernel} from '../kernel/Kernel';
 
+    type HistoryItem = {
+        type: 'text' | 'image';
+        content: string;
+    };
+
     const kernel = getContext<Kernel>('kernel');
-    let history: string[] = ['Welcome to Graphite Terminal. Type "help" for a list of commands.'];
+    let history: HistoryItem[] = [{type: 'text', content: 'Welcome to Graphite Terminal. Type "help" for a list of commands.'}];
     let inputValue = '';
     let inputEl: HTMLInputElement;
 
@@ -22,40 +27,45 @@
         }
 
         const fullCommand = `> ${commandToExecute}`;
-        let output = '';
+        let output: HistoryItem[] = [];
 
         // @ts-ignore
         if(typeof window.executeCommand === 'function') {
             // @ts-ignore
-            output = await window.executeCommand(commandToExecute);
+            const result = await window.executeCommand(commandToExecute);
+            output = [{type: 'text', content: result}];
         } else {
             const [command, ...args] = commandToExecute.split(' ');
             switch(command.toLowerCase()) {
                 case 'help':
-                    output = 'Available commands: help, echo, clear, ls. (Running in standalone mode)';
+                    output = [{type: 'text', content: 'Available commands: help, echo, clear, ls, nekofetch.'}];
                     break;
                 case 'echo':
-                    output = args.join(' ');
+                    output = [{type: 'text', content: args.join(' ')}];
                     break;
                 case 'clear':
-                    history = [fullCommand];
+                    history = [];
                     inputValue = '';
                     return;
                 case 'ls':
                     try {
                         const path = args[0] || '/';
                         const files = kernel.vfs.ls(path);
-                        output = files.join('\n');
+                        output = [{type: 'text', content: files.join('\n')}];
                     } catch(e: any) {
-                        output = e.message;
+                        output = [{type: 'text', content: e.message}];
                     }
                     break;
+                case 'nekofetch':
+                    const catUrl = `https://cataas.com/cat?t=${Date.now()}`;
+                    output = [{type: 'image', content: catUrl}];
+                    break;
                 default:
-                    output = `Command not found: ${command}`;
+                    output = [{type: 'text', content: `Command not found: ${command}`}];
             }
         }
 
-        history = [...history, fullCommand, output];
+        history = [...history, {type: 'text', content: fullCommand}, ...output];
         inputValue = '';
     }
 </script>
@@ -69,8 +79,12 @@
         on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && focusInput()}
 >
     <div class="history">
-        {#each history as line}
-            <pre>{line}</pre>
+        {#each history as item}
+            {#if item.type === 'image'}
+                <img src={item.content} alt="nekofetch result" style="max-width: 250px; border-radius: 4px; margin-top: 4px;" />
+            {:else}
+                <pre>{item.content}</pre>
+            {/if}
         {/each}
     </div>
     <div class="prompt">
@@ -88,7 +102,8 @@
     @import '../shell/AppKit.css';
 
     .terminal-container {
-        background-color: var(--primary-background);
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
         color: var(--primary-text);
         font-family: 'Courier New', Courier, monospace;
         overflow-y: auto;

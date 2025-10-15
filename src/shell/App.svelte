@@ -15,7 +15,6 @@
     import Launcher from './components/Launcher.svelte';
     import ContextMenu from './components/ContextMenu.svelte';
     import CalendarPopup from './components/CalendarPopup.svelte';
-    import ClockDetailsPopup from './components/ClockDetailsPopup.svelte';
     import Toaster from './components/Toaster.svelte';
     import Setup from './auth/Setup.svelte';
     import Login from './auth/Login.svelte';
@@ -88,7 +87,7 @@
         <Setup on:accountCreated={() => authState = 'authenticated'} />
     </div>
 {:else if authState === 'login'}
-    <div in:fade={{duration: 300, delay: 300}} out:fade={{duration: 300}}>
+    <div class="auth-container-wrapper" in:fade={{duration: 300, delay: 300}} out:fade={{duration: 300}}>
         <Login on:loginSuccess={() => authState = 'authenticated'} />
     </div>
 {:else if authState === 'authenticated'}
@@ -113,10 +112,6 @@
 
             {#if $dateTimeStore.calendarVisible}
                 <CalendarPopup />
-            {/if}
-
-            {#if $dateTimeStore.clockDetailsVisible}
-                <ClockDetailsPopup />
             {/if}
 
             <Dock

@@ -21,5 +21,9 @@ async function registerSW() {
         throw new Error("Your browser doesn't support service workers.");
     }
 
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for(const registration of registrations)
+        await registration.unregister();
+
     await navigator.serviceWorker.register(stockSW);
 }

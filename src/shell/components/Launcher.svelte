@@ -4,6 +4,8 @@
     import {onMount, tick} from 'svelte';
     import {pinnedApps} from '../store/pinnedAppsStore';
     import {webApps} from '../store/webAppsStore';
+    import { accounts } from '../store/accountStore';
+    import {Power} from 'phosphor-svelte';
 
     export let appRegistry: AppMetadata[] = [];
     export let onOpenApp: (app: AppMetadata) => void = () => {
@@ -15,6 +17,7 @@
     let searchInput: HTMLInputElement;
     let contextMenu: { x: number; y: number; app: AppMetadata } | null = null;
     let contextMenuEl: HTMLDivElement;
+    let powerMenuVisible = false;
 
     $: filteredApps = appRegistry.filter(app =>
         app.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,6 +81,11 @@
         webApps.remove(app.id);
         closeContextMenu();
     }
+
+    function logout() {
+        accounts.logout();
+        window.location.reload();
+    }
 </script>
 
 <div
@@ -96,32 +104,44 @@
             on:keydown={(e) => e.key === 'Escape' && onClose()}
             transition:fly={{ duration: 250, x: -100, opacity: 0 }}
     >
-        <div class="search-bar-wrapper">
-            <input
-                    bind:this={searchInput}
-                    type="text"
-                    bind:value={searchTerm}
-                    placeholder="Search for apps..."
-                    class="search-input"
-            />
+        <div class="main-content">
+            <div class="search-bar-wrapper">
+                <input
+                        bind:this={searchInput}
+                        type="text"
+                        bind:value={searchTerm}
+                        placeholder="Search for apps..."
+                        class="search-input"
+                />
+            </div>
+            <div class="app-grid">
+                {#each filteredApps as app (app.id)}
+                    <button
+                            class="app-tile"
+                            on:click={() => { onOpenApp(app); onClose(); }}
+                            on:contextmenu|preventDefault|stopPropagation={(e) => handleContextMenu(e, app)}
+                    >
+              <span class="icon-wrapper">
+                {#if typeof app.icon === 'string'}
+                  <img src={app.icon} alt={app.name} width="28" height="28"/>
+                {:else}
+                  <svelte:component this={app.icon} size={28}/>
+                {/if}
+              </span>
+                        <span class="app-name">{app.name}</span>
+                    </button>
+                {/each}
+            </div>
         </div>
-        <div class="app-grid">
-            {#each filteredApps as app (app.id)}
-                <button
-                        class="app-tile"
-                        on:click={() => { onOpenApp(app); onClose(); }}
-                        on:contextmenu|preventDefault|stopPropagation={(e) => handleContextMenu(e, app)}
-                >
-          <span class="icon-wrapper">
-            {#if typeof app.icon === 'string'}
-              <img src={app.icon} alt={app.name} width="28" height="28"/>
-            {:else}
-              <svelte:component this={app.icon} size={28}/>
+        <div class="launcher-footer">
+            <button class="power-button" on:click={() => powerMenuVisible = !powerMenuVisible}>
+                <Power size={20}/>
+            </button>
+            {#if powerMenuVisible}
+                <div class="power-menu" transition:fade={{duration: 100}}>
+                    <button on:click={logout}>Logout</button>
+                </div>
             {/if}
-          </span>
-                    <span class="app-name">{app.name}</span>
-                </button>
-            {/each}
         </div>
     </div>
 </div>
@@ -137,7 +157,7 @@
             {isPinned(contextMenu.app) ? 'Unpin from Dock' : 'Pin to Dock'}
         </button>
         {#if contextMenu.app.url}
-            <div class="divider" />
+            <div class="divider"/>
             <button on:click={() => uninstall(contextMenu.app)}>Uninstall</button>
         {/if}
     </div>
@@ -163,46 +183,52 @@
 
     .launcher {
         width: 100%;
-        max-width: 500px;
+        max-width: 480px;
         height: auto;
         max-height: 70vh;
         background-color: var(--ui-transparent-background);
         backdrop-filter: blur(10px);
         border-radius: 24px;
-        padding: 20px;
+        padding: 16px;
         margin-left: 8px;
         margin-bottom: 56px;
         display: flex;
         flex-direction: column;
     }
 
+    .main-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
     .search-bar-wrapper {
-        margin-bottom: 20px;
+        margin-bottom: 16px;
     }
 
     .search-input {
         width: 93%;
-        padding: 12px 16px;
+        padding: 10px 14px;
         background-color: var(--ui-transparent-background);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border: none !important;
         border-radius: 12px;
         color: var(--primary-text);
-        font-size: 16px;
+        font-size: 15px;
         outline: none;
         transition: border-color 0.2s, box-shadow 0.2s;
     }
 
     .search-input:focus {
-        border-color: var(--accent-color);
-        box-shadow: 0 0 0 2px var(--accent-color-hover);
+        box-shadow: none;
     }
 
     .app-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 16px;
-        overflow-y: auto;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
         padding-right: 8px;
+        flex-grow: 1;
     }
 
     .app-tile {
@@ -213,8 +239,8 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
-        padding: 10px;
+        gap: 8px;
+        padding: 8px;
         border-radius: 12px;
         transition: background-color 0.2s;
     }
@@ -224,8 +250,8 @@
     }
 
     .icon-wrapper {
-        width: 56px;
-        height: 56px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         background-color: rgba(255, 255, 255, 0.05);
         display: flex;
@@ -234,7 +260,7 @@
     }
 
     .app-name {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .context-menu {
@@ -260,6 +286,59 @@
     }
 
     .context-menu button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .launcher-footer {
+        padding-top: 16px;
+        display: flex;
+        justify-content: flex-end;
+        position: relative;
+    }
+
+    .power-button {
+        background: none;
+        border: none;
+        color: var(--primary-text);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+    .power-button:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .power-menu {
+        position: absolute;
+        bottom: 52px;
+        right: 0;
+        background-color: var(--ui-transparent-background);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: var(--spacing-small);
+        z-index: 1;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .power-menu button {
+        background: none;
+        border: none;
+        color: var(--primary-text);
+        cursor: pointer;
+        padding: var(--spacing-small) var(--spacing-medium);
+        width: 100%;
+        text-align: left;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .power-menu button:hover {
         background-color: rgba(255, 255, 255, 0.1);
     }
 </style>
